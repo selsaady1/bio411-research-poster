@@ -1,0 +1,297 @@
+---
+title: "Module 4 Overview Assignment"
+author: "Saif Elsaady"
+output: html_document
+---
+### Formatting
+R script (3 Points) - You will receive 3 points for having a functioning .rmd file. This script must be used to answer the assigned questions. Include comments in the script as well.
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(ggpubr)
+library(car)
+
+```
+
+## Question 1 (5 points)
+### Part 1 (1 point)
+  Load the "HMF Complete Uncleaned.csv" file. This is a more complete version of the data you have been working with in this and previous sections. Note that there is missing data and you may have to adjust for this for some of your calculations.
+```{r Question 1.1 code here}
+df <- read.csv("HMF Complete Uncleaned.csv")
+# Display the first few rows of the dataset
+head(df)
+
+# Get a summary of the dataset to check for missing values
+summary(df)
+
+# Count missing values in each column
+colSums(is.na(df))
+
+
+```
+### Part 2 (2 points)
+  Calculate the mean bird weight for the data set. In this data, the weight roughly follows a Poisson distribution (note this is because we are looking at multiple species with different average weights). Using your mean weight,plot the Poisson density function for weight. 
+```{r Question 1.2 code here}
+mean_weight <- mean(df$weight, na.rm = TRUE)
+
+# Print the mean weight
+print(paste("Mean Bird Weight:", mean_weight))
+
+# Define weight range for plotting
+weight_range <- seq(0, max(df$weight, na.rm = TRUE), by = 1)
+
+# Compute Poisson probability density for given mean
+poisson_density <- dpois(weight_range, lambda = mean_weight)
+
+# Plot the Poisson density function
+ggplot(data = data.frame(weight_range, poisson_density), aes(x = weight_range, y = poisson_density)) +
+  geom_line(color = "blue", size = 1) +
+  labs(title = "Poisson Density Function for Bird Weight",
+       x = "Bird Weight",
+       y = "Probability Density") +
+  theme_minimal()
+```
+
+### Part 3 (2 points)
+  In this data, bird weight is measured in grams. What is the probability that a randomly selected bird weighs less than 44 grams? What is the probability that a randomly selected bird weighs more than 35 grams?
+
+#### Part 3 Answers
+
+```{r Question 1.3 code here}
+# Calculate the mean bird weight
+mean_weight <- mean(df$weight, na.rm = TRUE)
+
+# Probability that a randomly selected bird weighs less than 44 grams
+prob_less_44 <- ppois(44, lambda = mean_weight)
+
+# Probability that a randomly selected bird weighs more than 35 grams
+prob_more_35 <- 1 - ppois(35, lambda = mean_weight)
+
+# Print results
+print(paste("P(Weight < 44g) =", round(prob_less_44, 4)))
+print(paste("P(Weight > 35g) =", round(prob_more_35, 4)))
+```
+
+## Question 2 (12 points)
+### Part 1 (2 Points)
+  Using R, subset the data into two time periods. One time period will be from 1960-1968. The other time period will be from 2011-2014. Name the the new dataframes "HMF_Historic_Data" and "HMF_Recent_Data" respectively. You can use either tidyverse or the subsetting function here
+```{r Question 2.1 Code Here}
+# Convert year column to numeric (in case it's stored as character)
+df$year <- as.numeric(df$year)
+
+# Subset data for 1960-1968
+HMF_Historic_Data <- df %>%
+  filter(year >= 1960 & year <= 1968)
+
+# Subset data for 2011-2014
+HMF_Recent_Data <- df %>%
+  filter(year >= 2011 & year <= 2014)
+
+# Print first few rows of each dataset to verify
+head(HMF_Historic_Data)
+head(HMF_Recent_Data)
+
+# Check number of observations in each subset
+print(paste("Historic Data Count:", nrow(HMF_Historic_Data)))
+print(paste("Recent Data Count:", nrow(HMF_Recent_Data)))
+
+```  
+### Part 2 (2 Points)
+  Using the two data frames, create two additional data frames that calculate the number of captures per year. Name the first "Historic_Captures_Per_Year" and the second "Recent_Captures_Per_Year". Note: each row represents a unique capture, so the total number of rows or observations per year represents the total number of captures.*Hint - using the group_by() and summarise() functions will be very useful here. Remember n() can be used to count the number of observations when used in the summarise command. Example summarise(count = n())*
+```{r Question 2.2 Code Here}
+# Calculate number of captures per year for Historic Data
+Historic_Captures_Per_Year <- HMF_Historic_Data %>%
+  group_by(year) %>%
+  summarise(count = n())
+
+# Calculate number of captures per year for Recent Data
+Recent_Captures_Per_Year <- HMF_Recent_Data %>%
+  group_by(year) %>%
+  summarise(count = n())
+
+# Print the results to check
+print(Historic_Captures_Per_Year)
+print(Recent_Captures_Per_Year)
+
+```  
+### Part 3 (2 Points)
+  Test to see if the number of captures/observations per year is normally distributed for each dataframe. For each data frame, produce one visualization test and one statistical test.
+
+```{r Question 2.3 Code Here}
+# Visualization Test: Histogram and QQ Plot for Historic Data
+ggplot(Historic_Captures_Per_Year, aes(x = count)) +
+  geom_histogram(binwidth = 10, fill = "blue", alpha = 0.6, color = "black") +
+  labs(title = "Histogram of Historic Captures Per Year", x = "Captures", y = "Frequency") +
+  theme_minimal()
+
+qqPlot(Historic_Captures_Per_Year$count, main = "QQ Plot - Historic Captures", col = "blue")
+
+# Visualization Test: Histogram and QQ Plot for Recent Data
+ggplot(Recent_Captures_Per_Year, aes(x = count)) +
+  geom_histogram(binwidth = 10, fill = "red", alpha = 0.6, color = "black") +
+  labs(title = "Histogram of Recent Captures Per Year", x = "Captures", y = "Frequency") +
+  theme_minimal()
+
+qqPlot(Recent_Captures_Per_Year$count, main = "QQ Plot - Recent Captures", col = "red")
+
+# Statistical Test: Shapiro-Wilk Test for Normality
+shapiro_test_historic <- shapiro.test(Historic_Captures_Per_Year$count)
+shapiro_test_recent <- shapiro.test(Recent_Captures_Per_Year$count)
+
+# Print Results
+print(shapiro_test_historic)
+print(shapiro_test_recent)
+
+```
+
+### Part 3.1 (1 Point)
+  In 2014 and 2015, sampling effort was only half of that in 2011, 2012, and 2013. To adjust for this, multiply the capture records for 2014 and 2015 by 2 (note that this is a very rough approximation of how to actually adjust for differences in trap effort). Now check to see if the recent data is normally distributed for captures by year. Hint: you can easily double the value in a specific cell in a data frame as follows "example_data[x,y]<-example_data[x,y]*2" 
+
+```{r Question 2.3.1 Code Here}
+# Adjust capture records for 2014 and 2015 by multiplying by 2
+Recent_Captures_Per_Year$count[Recent_Captures_Per_Year$year %in% c(2014, 2015)] <- 
+  Recent_Captures_Per_Year$count[Recent_Captures_Per_Year$year %in% c(2014, 2015)] * 2
+
+# Visualization: Histogram and QQ Plot
+ggplot(Recent_Captures_Per_Year, aes(x = count)) +
+  geom_histogram(binwidth = 10, fill = "red", alpha = 0.6, color = "black") +
+  labs(title = "Adjusted Histogram of Recent Captures Per Year", x = "Captures", y = "Frequency") +
+  theme_minimal()
+
+qqnorm(Recent_Captures_Per_Year$count)
+qqline(Recent_Captures_Per_Year$count, col = "blue")
+
+# Statistical Test: Shapiro-Wilk Normality Test
+shapiro_test_adjusted <- shapiro.test(Recent_Captures_Per_Year$count)
+
+# Print results
+print(shapiro_test_adjusted)
+
+```
+
+### Part 4 (2 Points)
+  Conduct a linear regression to investigate whether or not their is a statistical relationship between number of captures and year for the historic and recent time periods. For each time period, is there a relationship? How do you know? 
+  
+#### Part 4 Answer Here
+
+```{r Question 2.4 Code Here}
+
+# Linear regression for Historic Data
+historic_lm <- lm(count ~ year, data = Historic_Captures_Per_Year)
+
+# Summary of regression results for Historic Data
+summary(historic_lm)
+
+# Linear regression for Recent Data
+recent_lm <- lm(count ~ year, data = Recent_Captures_Per_Year)
+
+# Summary of regression results for Recent Data
+summary(recent_lm)
+
+# Visualization: Scatterplot with regression line for Historic Data
+ggplot(Historic_Captures_Per_Year, aes(x = year, y = count)) +
+  geom_point(color = "blue") +
+  geom_smooth(method = "lm", se = TRUE, color = "black") +
+  labs(title = "Linear Regression: Captures vs. Year (Historic Data)",
+       x = "Year", y = "Number of Captures") +
+  theme_minimal()
+
+# Visualization: Scatterplot with regression line for Recent Data
+ggplot(Recent_Captures_Per_Year, aes(x = year, y = count)) +
+  geom_point(color = "red") +
+  geom_smooth(method = "lm", se = TRUE, color = "black") +
+  labs(title = "Linear Regression: Captures vs. Year (Recent Data)",
+       x = "Year", y = "Number of Captures") +
+  theme_minimal()
+
+```
+
+### Part 5 (3 Points)
+  We are interested in knowing if the overall abundance of species is different between the historic and recent time periods. Conduct a test which compares the abundances between the Historic_Captures_Per_Year and the Recent_Captures_Per_Year dataframes. Are the abundances between these two time periods different? Use a boxplot to visualize this data
+
+#### Part 5 Answer Here
+  
+```{r Question 2.5 Code Here}
+# Add a time period label to each dataset
+Historic_Captures_Per_Year$Period <- "Historic"
+Recent_Captures_Per_Year$Period <- "Recent"
+
+# Combine the two datasets
+combined_data <- rbind(Historic_Captures_Per_Year, Recent_Captures_Per_Year)
+
+# Boxplot to visualize abundance differences
+ggplot(combined_data, aes(x = Period, y = count, fill = Period)) +
+  geom_boxplot(alpha = 0.6) +
+  labs(title = "Comparison of Species Abundance Across Time Periods",
+       x = "Time Period", y = "Number of Captures") +
+  theme_minimal()
+
+# Statistical Test: Wilcoxon Rank-Sum Test (Non-parametric alternative to t-test)
+abundance_test <- wilcox.test(count ~ Period, data = combined_data, exact = FALSE)
+
+# Print test results
+print(abundance_test)
+
+```
+
+#### Question 3
+### Part 1 (2 Points)
+  We want to know if, broadly speaking, functional traits vary by habitat. Create a data frame that includes the mean, median, and standard deviation for species wing cord length ("wc" in the dataframe) for species that live in forests (forest), grasslands (grassland), open woodlands (open woodlands) and scrub (scrub). *Once again, think about group_by() and summarise(). You will also need to filter so you only include the 4 groups of interest*
+  
+**Also note, drop levels will get rid of empty categories in your data frame. After you subset your data, you may see that your data still includes habitats that are not of interest even though there are 0 records for these habitats. droplevels() will fix this. Use droplevels as so: exampledata<-droplevels(exampledata)**
+
+```{r Question 3.1 Code Here}
+# Filter the dataset for only the four habitat types of interest
+filtered_data <- df %>%
+  filter(habitat %in% c("forest", "grassland", "open woodlands", "scrub"))
+
+# Remove empty categories from the dataset
+filtered_data <- droplevels(filtered_data)
+
+# Calculate mean, median, and standard deviation for wing cord length ("wc") by habitat type
+wc_stats <- filtered_data %>%
+  group_by(habitat) %>%
+  summarise(
+    mean_wc = mean(wc, na.rm = TRUE),
+    median_wc = median(wc, na.rm = TRUE),
+    sd_wc = sd(wc, na.rm = TRUE)
+  )
+
+# Print results
+print(wc_stats)
+
+```
+
+### Part 2 (3 Points)
+  Run a test(s) to determine if wing cord length differs between habitat types. How does wing cord length differ between these four habitats? Create a boxplot that shows wing cord (measured in cm) for each habitat type.
+  
+#### Answer Here
+
+```{r Question 3.2 Code Here}
+# Boxplot to visualize wing cord length across habitats
+ggplot(filtered_data, aes(x = habitat, y = wc, fill = habitat)) +
+  geom_boxplot(alpha = 0.6) +
+  labs(title = "Wing Cord Length by Habitat Type",
+       x = "Habitat", y = "Wing Cord Length (cm)") +
+  theme_minimal()
+
+# Check for normality assumption using Shapiro-Wilk test
+shapiro_test <- filtered_data %>%
+  group_by(habitat) %>%
+  summarise(p_value = shapiro.test(wc)$p.value)
+
+print(shapiro_test)
+
+# If normality assumption holds (p > 0.05 for all groups), run ANOVA
+if (all(shapiro_test$p_value > 0.05)) {
+  anova_model <- aov(wc ~ habitat, data = filtered_data)
+  anova_result <- summary(anova_model)
+  print(anova_result)
+} else {
+  # If data is not normally distributed, run Kruskal-Wallis test
+  kruskal_result <- kruskal.test(wc ~ habitat, data = filtered_data)
+  print(kruskal_result)
+}
+
+```

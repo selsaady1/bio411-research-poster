@@ -1,0 +1,513 @@
+---
+title: "Bio 411,Module 3 Overview Assessment"
+author: "Saif Elsaady"
+output: html_document
+---
+Set up the global options
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+###Part 1
+Tracking Three Populations (2 Points)
+
+Set up a data frame to track three populations. We wil have a food chain in which we have mice, snakes, and hawks. Mice are our prey species. Snakes will feed on mice. Hawks will feed on both snakes and mice. Start by setting up a data frame that tracks the three populations over 100 time periods. All three species will follow exponential growth.
+
+**Starting Population(N0) for Mice is 100, their growth rate is 15%**
+**Starting Population(N0) for Snakes is 20, their growth rate is 5%**
+**Starting Population(N0) for Hawks is 5, their growth rate is 2%**
+
+The code below will need to be edited. Also be sure to add comments to explain what is being done in each step, especially for code that is provided. 
+
+```{r Part 1}
+# Initialize vectors to track populations over 100 time periods
+mice <- c()   # Population of mice
+snakes <- c() # Population of snakes
+hawks <- c()  # Population of hawks
+
+# Define initial populations (N0) for each species
+Mouse_N0 <- 100  # Starting population for mice
+Snake_N0 <- 20   # Starting population for snakes
+Hawk_N0 <- 5     # Starting population for hawks
+
+# Define growth rates for each species
+Mouse_r <- 0.15  # Growth rate for mice (15%)
+Snake_r <- 0.05  # Growth rate for snakes (5%)
+Hawk_r <- 0.02   # Growth rate for hawks (2%)
+
+# Set the initial populations in the vectors
+mice[1] <- Mouse_N0
+snakes[1] <- Snake_N0
+hawks[1] <- Hawk_N0
+
+# Use a for loop to calculate populations over 100 time periods
+for (i in 2:100) {
+  # Exponential growth formula: N(t) = N(t-1) * (1 + r)
+  mice[i] <- mice[i - 1] * (1 + Mouse_r)
+  snakes[i] <- snakes[i - 1] * (1 + Snake_r)
+  hawks[i] <- hawks[i - 1] * (1 + Hawk_r)
+}
+
+# Create a data frame to track all populations over time
+Tracking_Populations <- data.frame(
+  "Time" = 1:100, # Time periods from 1 to 100
+  "Mouse_Population" = mice, 
+  "Snake_Population" = snakes, 
+  "Hawk_Population" = hawks
+)
+
+# Create a plot that shows all three populations on the same figure
+plot(
+  Tracking_Populations$Time, Tracking_Populations$Mouse_Population, 
+  type = "l", col = "blue", lwd = 2,
+  xlab = "Time (Periods)", ylab = "Population", 
+  main = "Populations of Mice, Snakes, and Hawks Over Time"
+)
+
+# Add lines for the snake population
+lines(
+  Tracking_Populations$Time, Tracking_Populations$Snake_Population, 
+  col = "green", lwd = 2
+)
+
+# Add lines for the hawk population
+lines(
+  Tracking_Populations$Time, Tracking_Populations$Hawk_Population, 
+  col = "red", lwd = 2
+)
+
+# Add a legend to distinguish between the populations
+legend(
+  "topright", legend = c("Mice", "Snakes", "Hawks"), 
+  col = c("blue", "green", "red"), lty = 1, lwd = 2
+)
+
+```
+
+###Part 2
+Adding Stochasticity (2 Points)
+
+In our example, mice populations are highly variable but snakes and hawks have more stable populations. Paste your code from above into the chunk below. Edit your code to make the following changes
+
+**mice have growth rates that vary from -1% to +9%**
+**snakes have growth rates that vary from 3% to 6%**
+**hawks have growth rates that vary from 1.8% to 2.5%**
+
+```{r Part 2}
+
+#This example generates a variable growth rate between -5% and 5%. Hint, you will need to move your growth rate from outside of your for loop to inside of it.
+Example_Variable_Growth<-runif(1,-0.05,0.05)
+
+
+# Initialize vectors to track populations over 100 time periods
+mice <- c()   # Population of mice
+snakes <- c() # Population of snakes
+hawks <- c()  # Population of hawks
+
+# Define initial populations (N0) for each species
+Mouse_N0 <- 100  # Starting population for mice
+Snake_N0 <- 20   # Starting population for snakes
+Hawk_N0 <- 5     # Starting population for hawks
+
+# Set the initial populations in the vectors
+mice[1] <- Mouse_N0
+snakes[1] <- Snake_N0
+hawks[1] <- Hawk_N0
+
+# Use a for loop to calculate populations over 100 time periods with variable growth rates
+for (i in 2:100) {
+  # Generate variable growth rates for each species
+  Mouse_r <- runif(1, -0.01, 0.09)  # Mice growth rate: -1% to +9%
+  Snake_r <- runif(1, 0.03, 0.06)   # Snakes growth rate: 3% to 6%
+  Hawk_r <- runif(1, 0.018, 0.025)  # Hawks growth rate: 1.8% to 2.5%
+
+  # Exponential growth formula with stochasticity: N(t) = N(t-1) * (1 + r)
+  mice[i] <- mice[i - 1] * (1 + Mouse_r)
+  snakes[i] <- snakes[i - 1] * (1 + Snake_r)
+  hawks[i] <- hawks[i - 1] * (1 + Hawk_r)
+}
+
+# Create a data frame to track all populations over time
+Tracking_Populations <- data.frame(
+  "Time" = 1:100, # Time periods from 1 to 100
+  "Mouse_Population" = mice, 
+  "Snake_Population" = snakes, 
+  "Hawk_Population" = hawks
+)
+
+# Create a plot that shows all three populations on the same figure
+plot(
+  Tracking_Populations$Time, Tracking_Populations$Mouse_Population, 
+  type = "l", col = "blue", lwd = 2,
+  xlab = "Time (Periods)", ylab = "Population", 
+  main = "Populations of Mice, Snakes, and Hawks with Stochastic Growth"
+)
+
+# Add lines for the snake population
+lines(
+  Tracking_Populations$Time, Tracking_Populations$Snake_Population, 
+  col = "green", lwd = 2
+)
+
+# Add lines for the hawk population
+lines(
+  Tracking_Populations$Time, Tracking_Populations$Hawk_Population, 
+  col = "red", lwd = 2
+)
+
+# Add a legend to distinguish between the populations
+legend(
+  "topright", legend = c("Mice", "Snakes", "Hawks"), 
+  col = c("blue", "green", "red"), lty = 1, lwd = 2
+)
+
+```
+
+###Part 3
+Adding a 5 year storm (2 points)
+
+In this example, the area these populations live is storm prone. ON AVERAGE, a major storm occurs every five years. *This does not mean a storm happens every fifth year*
+
+Mice and snakes are both especially vulenerable to storms since they live in burrows but hawks are less effected.
+
+If a storm occurs, 25% of mice will die, 20% of snakes will die, and 5% of hawks will die. 
+
+Add an if statement that incorperates the storm dynamics. *Hint, you will need one if statement that captures the storm dynamic that then influences the three populations* 
+
+```{r Part 3}
+
+# Initialize vectors to track populations over 100 time periods
+mice <- c()   # Population of mice
+snakes <- c() # Population of snakes
+hawks <- c()  # Population of hawks
+
+# Define initial populations (N0) for each species
+Mouse_N0 <- 100  # Starting population for mice
+Snake_N0 <- 20   # Starting population for snakes
+Hawk_N0 <- 5     # Starting population for hawks
+
+# Set the initial populations in the vectors
+mice[1] <- Mouse_N0
+snakes[1] <- Snake_N0
+hawks[1] <- Hawk_N0
+
+# Use a for loop to calculate populations over 100 time periods with variable growth rates
+for (i in 2:100) {
+  # Generate variable growth rates for each species
+  Mouse_r <- runif(1, -0.01, 0.09)  # Mice growth rate: -1% to +9%
+  Snake_r <- runif(1, 0.03, 0.06)   # Snakes growth rate: 3% to 6%
+  Hawk_r <- runif(1, 0.018, 0.025)  # Hawks growth rate: 1.8% to 2.5%
+
+  # Exponential growth formula with stochasticity: N(t) = N(t-1) * (1 + r)
+  mice[i] <- mice[i - 1] * (1 + Mouse_r)
+  snakes[i] <- snakes[i - 1] * (1 + Snake_r)
+  hawks[i] <- hawks[i - 1] * (1 + Hawk_r)
+
+  # Add storm dynamics
+  Storm_Chance <- runif(1, 0, 1)  # Generate a random number to determine if a storm occurs
+  if (Storm_Chance < 0.34) {      # 33% chance of a storm
+    mice[i] <- mice[i] * 0.75     # 25% of mice die
+    snakes[i] <- snakes[i] * 0.80 # 20% of snakes die
+    hawks[i] <- hawks[i] * 0.95   # 5% of hawks die
+  }
+}
+
+# Create a data frame to track all populations over time
+Tracking_Populations <- data.frame(
+  "Time" = 1:100, # Time periods from 1 to 100
+  "Mouse_Population" = mice, 
+  "Snake_Population" = snakes, 
+  "Hawk_Population" = hawks
+)
+
+# Create a plot that shows all three populations on the same figure
+plot(
+  Tracking_Populations$Time, Tracking_Populations$Mouse_Population, 
+  type = "l", col = "blue", lwd = 2,
+  xlab = "Time (Periods)", ylab = "Population", 
+  main = "Populations of Mice, Snakes, and Hawks with Stochastic Growth and Storms"
+)
+
+# Add lines for the snake population
+lines(
+  Tracking_Populations$Time, Tracking_Populations$Snake_Population, 
+  col = "green", lwd = 2
+)
+
+# Add lines for the hawk population
+lines(
+  Tracking_Populations$Time, Tracking_Populations$Hawk_Population, 
+  col = "red", lwd = 2
+)
+
+# Add a legend to distinguish between the populations
+legend(
+  "topright", legend = c("Mice", "Snakes", "Hawks"), 
+  col = c("blue", "green", "red"), lty = 1, lwd = 2
+)
+
+
+
+```
+
+###Part 4
+Linking the Food Chain (6 points)
+Until this point, all three of these populations have been unrelated (i.e. there is no term which connects there growth rates). In this example, snakes eat mice, and hawks eat both mice and snakes. The only way mice die is due to snakes and hawks. The only way snakes die is due to being eaten by hawks. Hawks have a natural death rate.
+
+Using the predator-prey models from the previous section as an example, modifiy your code as follows.
+
+The mice population is equal to:
+
+$$ N_{mice_{t}} = r_{mice}*N_{mice{t-1}}- \beta_1*N_{mice{t-1}}*
+N_{snake_{t-1}}-\beta_2*N_{mice{t-1}}*N_{hawk_{t-1}} $$
+
+Where beta1 is the encounter rate for mice and snakes and beta 2 is the encounter rate for mice and hawks
+
+The snake population is equal to:
+
+$$ N_{snake_{t}} = \delta_1*\beta_1*N_{mice{t-1}}*N_{snake_{t-1}}-\beta_3*N_{snakes{t-1}}*N_{hawk_{t-1}} $$
+
+Where gamma1 is equalt to the how effectively snakes turn mice into food and beta3 is how often hawks encounter and eat snakes.
+
+Finally, the hawk population is equal to:
+
+
+$$ N_{hawk_{t}} = \delta_2*\beta_3*N_{snakes{t-1}}*N_{hawks_{t-1}}+\delta_3*\beta_2*N_{mice{t-1}}*N_{hawk_{t-1}}-\gamma*N_{hawk_{t-1}} $$
+
+Where delta 2 and 3 are the conversation rate for hawks turning snakes and mice into energy / offspring respectively and gamma is the death rate of hawks
+
+Use the following rates:
+Mice growth rate should stay the same as you have it set
+beta1<-0.03
+beta2<-0.01
+beta3<-0.02
+delta1<-0.25
+delta2<-0.3
+delta3<-0.15
+gamma<-0.3
+
+```{r Part 4}
+
+#Change your population growth terms to include the interactions. You can copy and paste code from the example script from the previous competition code but it will need to be modified. Also note, you will only keep the random growth rate for mice, snakes and hawks growth rate will now just be due to how they catch and eat prey. 
+
+# Initialize vectors to track populations over 100 time periods
+mice <- c()   # Population of mice
+snakes <- c() # Population of snakes
+hawks <- c()  # Population of hawks
+
+# Define initial populations (N0) for each species
+Mouse_N0 <- 100  # Starting population for mice
+Snake_N0 <- 20   # Starting population for snakes
+Hawk_N0 <- 5     # Starting population for hawks
+
+# Set the initial populations in the vectors
+mice[1] <- Mouse_N0
+snakes[1] <- Snake_N0
+hawks[1] <- Hawk_N0
+
+# Define rates
+beta1 <- 0.03  # Encounter rate for mice and snakes
+beta2 <- 0.01  # Encounter rate for mice and hawks
+beta3 <- 0.02  # Encounter rate for snakes and hawks
+delta1 <- 0.25 # Conversion rate for snakes turning mice into energy
+delta2 <- 0.3  # Conversion rate for hawks turning snakes into energy
+delta3 <- 0.15 # Conversion rate for hawks turning mice into energy
+gamma <- 0.3   # Death rate for hawks
+
+# Use a for loop to calculate populations over 100 time periods with predator-prey dynamics
+for (i in 2:100) {
+  # Random growth rate for mice
+  Mouse_r <- runif(1, -0.01, 0.09)  # Mice growth rate: -1% to +9%
+
+  # Mice population dynamics
+  mice[i] <- mice[i - 1] * (1 + Mouse_r) -
+    beta1 * mice[i - 1] * snakes[i - 1] -
+    beta2 * mice[i - 1] * hawks[i - 1]
+
+  # Snakes population dynamics
+  snakes[i] <- delta1 * beta1 * mice[i - 1] * snakes[i - 1] -
+    beta3 * snakes[i - 1] * hawks[i - 1]
+
+  # Hawks population dynamics
+  hawks[i] <- delta2 * beta3 * snakes[i - 1] * hawks[i - 1] +
+    delta3 * beta2 * mice[i - 1] * hawks[i - 1] -
+    gamma * hawks[i - 1]
+
+  # Ensure no negative populations
+  mice[i] <- max(mice[i], 0)
+  snakes[i] <- max(snakes[i], 0)
+  hawks[i] <- max(hawks[i], 0)
+}
+
+# Create a data frame to track all populations over time
+Tracking_Populations <- data.frame(
+  "Time" = 1:100, # Time periods from 1 to 100
+  "Mouse_Population" = mice, 
+  "Snake_Population" = snakes, 
+  "Hawk_Population" = hawks
+)
+
+# Create a plot that shows all three populations on the same figure
+plot(
+  Tracking_Populations$Time, Tracking_Populations$Mouse_Population, 
+  type = "l", col = "blue", lwd = 2,
+  xlab = "Time (Periods)", ylab = "Population", 
+  main = "Populations of Mice, Snakes, and Hawks with Predator-Prey Dynamics"
+)
+
+# Add lines for the snake population
+lines(
+  Tracking_Populations$Time, Tracking_Populations$Snake_Population, 
+  col = "green", lwd = 2
+)
+
+# Add lines for the hawk population
+lines(
+  Tracking_Populations$Time, Tracking_Populations$Hawk_Population, 
+  col = "red", lwd = 2
+)
+
+# Add a legend to distinguish between the populations
+legend(
+  "topright", legend = c("Mice", "Snakes", "Hawks"), 
+  col = c("blue", "green", "red"), lty = 1, lwd = 2
+)
+
+
+```
+
+###Part 5
+
+If any population crashes to 0, that population can no longer grow. Add an if statement for the populations stops future population growth if a population goes to 0.
+
+```{r Part 5}
+
+# Initialize vectors to track populations over 100 time periods
+mice <- c()   # Population of mice
+snakes <- c() # Population of snakes
+hawks <- c()  # Population of hawks
+
+# Define initial populations (N0) for each species
+Mouse_N0 <- 100  # Starting population for mice
+Snake_N0 <- 20   # Starting population for snakes
+Hawk_N0 <- 5     # Starting population for hawks
+
+# Set the initial populations in the vectors
+mice[1] <- Mouse_N0
+snakes[1] <- Snake_N0
+hawks[1] <- Hawk_N0
+
+# Define rates
+beta1 <- 0.03  # Encounter rate for mice and snakes
+beta2 <- 0.01  # Encounter rate for mice and hawks
+beta3 <- 0.02  # Encounter rate for snakes and hawks
+delta1 <- 0.25 # Conversion rate for snakes turning mice into energy
+delta2 <- 0.3  # Conversion rate for hawks turning snakes into energy
+delta3 <- 0.15 # Conversion rate for hawks turning mice into energy
+gamma <- 0.3   # Death rate for hawks
+
+# Use a for loop to calculate populations over 100 time periods with predator-prey dynamics
+for (i in 2:100) {
+  # Random growth rate for mice
+  Mouse_r <- runif(1, -0.01, 0.09)  # Mice growth rate: -1% to +9%
+
+  # Mice population dynamics with crash logic
+  if (mice[i - 1] <= 0) {
+    mice[i] <- 0
+  } else {
+    mice[i] <- mice[i - 1] * (1 + Mouse_r) -
+      beta1 * mice[i - 1] * snakes[i - 1] -
+      beta2 * mice[i - 1] * hawks[i - 1]
+  }
+
+  # Snakes population dynamics with crash logic
+  if (snakes[i - 1] <= 0) {
+    snakes[i] <- 0
+  } else {
+    snakes[i] <- delta1 * beta1 * mice[i - 1] * snakes[i - 1] -
+      beta3 * snakes[i - 1] * hawks[i - 1]
+  }
+
+  # Hawks population dynamics with crash logic
+  if (hawks[i - 1] <= 0) {
+    hawks[i] <- 0
+  } else {
+    hawks[i] <- delta2 * beta3 * snakes[i - 1] * hawks[i - 1] +
+      delta3 * beta2 * mice[i - 1] * hawks[i - 1] -
+      gamma * hawks[i - 1]
+  }
+
+  # Ensure no negative populations
+  mice[i] <- max(mice[i], 0)
+  snakes[i] <- max(snakes[i], 0)
+  hawks[i] <- max(hawks[i], 0)
+}
+
+# Create a data frame to track all populations over time
+Tracking_Populations <- data.frame(
+  "Time" = 1:100, # Time periods from 1 to 100
+  "Mouse_Population" = mice, 
+  "Snake_Population" = snakes, 
+  "Hawk_Population" = hawks
+)
+
+# Create a plot that shows all three populations on the same figure
+plot(
+  Tracking_Populations$Time, Tracking_Populations$Mouse_Population, 
+  type = "l", col = "blue", lwd = 2,
+  xlab = "Time (Periods)", ylab = "Population", 
+  main = "Populations with Predator-Prey Dynamics and Crash Logic"
+)
+
+# Add lines for the snake population
+lines(
+  Tracking_Populations$Time, Tracking_Populations$Snake_Population, 
+  col = "green", lwd = 2
+)
+
+# Add lines for the hawk population
+lines(
+  Tracking_Populations$Time, Tracking_Populations$Hawk_Population, 
+  col = "red", lwd = 2
+)
+
+# Add a legend to distinguish between the populations
+legend(
+  "topright", legend = c("Mice", "Snakes", "Hawks"), 
+  col = c("blue", "green", "red"), lty = 1, lwd = 2
+)
+
+```
+
+###Part 6
+If you have not already, create a plot for your three populations based upon your code in part 5. Run your code several times to look at how things change with each run (between the random growth rate for mice and storms, your plots should look different). Do any of the populations crash in any of your runs? If so, which and how does this impact the other populations. What interventions might you take in order to maintain more stable populations and how would this be reflected in your code.
+
+For example, if you created secure burrows that mitigated the risk of storms for snakes, the death rate from storms might change from 20% to 5%. What would this change look like in your code?
+
+##### Observations from Part 5:
+Following a few iterations of the code, the populations exhibit stochasticity due to random growth rates and storm occurrences. The mice population tends to crash after reaching its peak, typically due to enhanced predation by snakes and hawks or excessive loss due to storms. This in turn leads to a crash in snake populations as snakes prey on mice almost exclusively. The population of hawks also remains static or crashes, as they are reliant on both snakes and mice. These crashes have a cascading effect—when the population of mice crashes, snakes lose their main source of food and thus decline, and hawks, being unable to survive, either stagnate or vanish.
+
+In order to stabilize these populations, a number of interventions can be made. First, minimizing storm effect on snakes and mice can assist in keeping their populations intact. Providing safe burrows may decrease storm-induced mortality for snakes from 20 percent to 5 percent, while partial protection from storms for mice may decrease their death rate from 25 percent to 15 percent. Secondly, changing predator-prey interactions can prevent unchecked mouse growth by increasing the effectiveness of predation—improving encounter rates for mice with hawks and snakes and improving conversion rates so predators use prey more efficiently for energy and reproduction. Lastly, lowering the natural mortality rate of hawks would help to keep their numbers stable during prey availability fluctuations, giving the system more stability.
+
+##### Code Changes to Reflect Interventions:
+Here are some specific changes to the code to implement these interventions:
+
+- **Reduce storm impact on snakes and mice**:
+```{r }
+   # Inside the storm logic
+   if (Storm_Chance < 0.34) {
+     mice[i] <- mice[i] * 0.85  # Mice storm death rate reduced to 15%
+     snakes[i] <- snakes[i] * 0.95  # Snakes storm death rate reduced to 5%
+     hawks[i] <- hawks[i] * 0.95  # Hawks storm death rate remains 5%
+   }
+   
+   # Adjust predator-prey interaction rates
+beta1 <- 0.05  # Increase encounter rate for mice and snakes
+beta2 <- 0.03  # Increase encounter rate for mice and hawks
+delta1 <- 0.35 # Increase conversion rate for snakes consuming mice
+delta2 <- 0.4  # Increase conversion rate for hawks consuming snakes
+
+gamma <- 0.2  # Reduce hawk natural death rate from 30% to 20%
+```
+
+

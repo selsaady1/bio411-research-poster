@@ -1,0 +1,238 @@
+---
+title: "Hawksbill Sea Turtle (Eretmochelys imbricata) Species Survival Plan"
+author: "Saif Elsaady"
+date: "2025-02-03"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(ggplot2)
+library(dplyr)
+```
+
+## **Introduction**
+
+The Hawksbill Sea Turtle (Eretmochelys imbricata) is under severe threat of extinction due to poaching, habitat destruction, bycatch, and global warming. The turtles play a significant role in the coral reef ecosystem as they help maintain the population of sponges, but their fragmented nature and declining numbers threaten their very survival. Mortimer & Donnelly (2008), Bell et al. (2007), and Meylan & Donnelly (1999) evidence indicates key life history traits including low juvenile survival (0.25–10%), high adult survival (85–90%), and reproductive patterns where females nest every 2–3 years and lay 3–6 batches of 100–150 eggs. Population fragmentation also limits genetic diversity and recovery potential.
+
+To forecast future population trends, a stage-structured population model (Leslie Matrix) will be used to project Hawksbill numbers for 2021 to 2071. The model will include eggs, juveniles, and adults, taking into account survival, reproductive success, and conservation efforts like nest protection and bycatch reduction. As a keystone species, their survival would be vital for the well-being of marine ecosystems. The objective of this study is to offer sound conservation strategies and guide policies for ensuring long-term stability of Hawksbill populations and the diversity that they maintain.
+
+
+## **Methods**
+
+### **Model Selection**
+To forecast the population trends of **Hawksbill Sea Turtles (*Eretmochelys imbricata*)**, a **combined approach** was used:
+
+1. **Logistic Growth Model** – To account for **density-dependent population constraints**.  
+
+2. **Age-Structured Model** – To **track survival & reproduction across life stages** (Eggs, Juveniles, Sub-Adults, Adults).  
+
+The **logistic growth model** follows the equation:
+\[
+P_{t+1} = P_t + r \cdot P_t \left(1 - \frac{P_t}{K}\right)
+\]
+where:
+- \( P_t \): Population at time \( t \),
+- \( r \): Growth rate (positive or negative),
+- \( K \): Carrying capacity (maximum sustainable population size).
+
+To model population dynamics of Hawksbill Sea Turtles, a stage-structured model was utilized, with survival and reproduction at all life stages. Eggs experience low survival with no reproduction, juveniles experience high bottleneck (0.25–10% survival), sub-adults experience moderate survival with little reproductive contribution, and adults experience high survival and are the principal reproductive age group. This technique gives accurate estimates through the identification of significant life events that influence trends in populations. Survival rates and life history traits were sourced by Mortimer & Donnelly (2008), Bell et al. (2007), and Meylan & Donnelly (1999), providing a foundation for population modeling with a conservation perspective.
+
+The model was simulated with a Logistic Growth Model and an Age-Structured Model to predict population dynamics from 2021 to 2071. The Logistic Growth Model had carrying capacity constraints and density-dependent effects, while the Age-Structured Model tracked changes through eggs, juveniles, sub-adults, and adults, with a focus on life-stage-specific survival and reproduction. Two runs were made: a Baseline Model (no conservation measures) yielded a negative growth rate (r = -0.02) with heavy population loss, whereas a Conservation Model (Marine Protected Areas, Turtle Excluder Devices, and anti-poaching activities) improved juvenile survival and produced a positive growth rate (r = 0.015) and eventual long-term population recovery. This two-stage modeling approach provides essential information about Hawksbill conservation requirements, revealing that protection of the nesting sites and juvenile survival are critical to the species' persistence.
+
+
+
+---
+
+### **Citations**
+- Mortimer, J. A., & Donnelly, M. (2008). "Marine Turtle Specialist Group Review: Hawksbill Turtles." IUCN Red List of Threatened Species.  
+- Bell, C. D., Blumenthal, J. M., Austin, T. J., Solomon, J. L., Ebanks-Petrie, G., & Broderick, A. C. (2007). "Encouraging trends in the nesting population of Hawksbill Turtles (*Eretmochelys imbricata*) on Little Cayman Island." *Oryx, 41*(3), 309-312.  
+- Meylan, A. B., & Donnelly, M. (1999). "Status justification for listing the Hawksbill Turtle (*Eretmochelys imbricata*) as Critically Endangered on the 1996 IUCN Red List of Threatened Animals." *Chelonian Conservation and Biology, 3*(2), 200-224.  
+
+
+## **Results**
+
+```{r age_structured_population_model}
+# Setting model parameters
+years <- seq(2021, 2071, by=1)
+egg_start <- 1000  
+juvenile_start <- 250  
+sub_adult_start <- 100  
+adult_start <- 50  
+
+# Survival Rates
+egg_survival <- 0.05  
+juvenile_survival <- 0.20  
+sub_adult_survival <- 0.75  
+adult_survival <- 0.95  
+
+# Reproductive Output
+sub_adult_reproduction <- 2.5  
+adult_reproduction <- 15  
+
+# Initialize arrays
+egg_pop <- numeric(length(years))
+juvenile_pop <- numeric(length(years))
+sub_adult_pop <- numeric(length(years))
+adult_pop <- numeric(length(years))
+
+# Initial values
+egg_pop[1] <- egg_start
+juvenile_pop[1] <- juvenile_start
+sub_adult_pop[1] <- sub_adult_start
+adult_pop[1] <- adult_start
+
+# Running the Age-Structured Model
+for (i in 2:length(years)) {
+  egg_pop[i] <- (sub_adult_pop[i-1] * sub_adult_reproduction * sub_adult_survival) + 
+                (adult_pop[i-1] * adult_reproduction * adult_survival)
+  
+  juvenile_pop[i] <- egg_pop[i-1] * egg_survival
+  sub_adult_pop[i] <- (juvenile_pop[i-1] * juvenile_survival) + 
+                      (sub_adult_pop[i-1] * sub_adult_survival * 0.75)
+  adult_pop[i] <- (sub_adult_pop[i-1] * sub_adult_survival * 0.25) + 
+                  (adult_pop[i-1] * adult_survival)
+}
+
+# Total Population Calculation
+total_population <- egg_pop + juvenile_pop + sub_adult_pop + adult_pop
+
+# Create DataFrame
+df_age_structured <- data.frame(
+  Year = years,
+  Total_Population = total_population,
+  Eggs = egg_pop,
+  Juveniles = juvenile_pop,
+  Sub_Adults = sub_adult_pop,
+  Adults = adult_pop
+)
+
+# Plotting Total Population Over Time
+ggplot(df_age_structured, aes(x=Year)) +
+  geom_line(aes(y=Total_Population, color="Total Population"), size=1.5) +
+  geom_line(aes(y=Eggs, color="Eggs"), linetype="dashed") +
+  geom_line(aes(y=Juveniles, color="Juveniles"), linetype="dashed") +
+  geom_line(aes(y=Sub_Adults, color="Sub-Adults"), linetype="dashed") +
+  geom_line(aes(y=Adults, color="Adults"), linetype="dashed") +
+  labs(title="Hawksbill Sea Turtle Population Growth (Age-Structured Model)",
+       x="Year", y="Population Size",
+       color="Population Stage") +
+  scale_color_manual(values=c("blue", "red", "green", "orange", "purple")) +
+  theme_minimal()
+
+
+# Setting logistic model parameters
+initial_population <- 20000  
+growth_rate_baseline <- -0.02  
+growth_rate_conservation <- 0.015  
+carrying_capacity <- 50000  
+
+# Logistic Growth Function
+logistic_growth <- function(P0, r, K, years) {
+  population <- numeric(length(years))
+  population[1] <- P0
+  for (i in 2:length(years)) {
+    population[i] <- population[i-1] + r * population[i-1] * (1 - population[i-1] / K)
+  }
+  return(population)
+}
+
+# Running the logistic models
+population_baseline <- logistic_growth(initial_population, growth_rate_baseline, carrying_capacity, years)
+population_conservation <- logistic_growth(initial_population, growth_rate_conservation, carrying_capacity, years)
+
+# Create DataFrame
+df_logistic <- data.frame(Year = years, 
+                          Baseline = population_baseline, 
+                          Conservation = population_conservation)
+
+# Plotting logistic growth projections
+ggplot(df_logistic, aes(x=Year)) +
+  geom_line(aes(y=Baseline, color="No Conservation (Decline)"), linetype="dashed", size=1) +
+  geom_line(aes(y=Conservation, color="With Conservation (Recovery)"), size=1) +
+  labs(title="Projected Hawksbill Turtle Population (2021-2071)",
+       x="Year", y="Estimated Population",
+       color="Scenario") +
+  scale_color_manual(values=c("red", "green")) +
+  theme_minimal()
+
+
+df_logistic$Growth_Baseline <- c(NA, diff(df_logistic$Baseline))
+df_logistic$Growth_Conservation <- c(NA, diff(df_logistic$Conservation))
+
+ggplot(df_logistic, aes(x=Year)) +
+  geom_line(aes(y=Growth_Baseline, color="No Conservation"), linetype="dashed", size=1) +
+  geom_line(aes(y=Growth_Conservation, color="With Conservation"), size=1) +
+  labs(title="Annual Population Growth Rate (2021-2071)",
+       x="Year", y="Annual Growth",
+       color="Scenario") +
+  scale_color_manual(values=c("red", "green")) +
+  theme_minimal()
+
+survival_data <- data.frame(
+  Stage = c("Eggs", "Juveniles", "Sub-Adults", "Adults"),
+  Survival_Rate = c(0.05, 0.20, 0.75, 0.95)
+)
+
+ggplot(survival_data, aes(x=Stage, y=Survival_Rate, fill=Stage)) +
+  geom_bar(stat="identity") +
+  labs(title="Survival Rates Across Life Stages",
+       x="Life Stage", y="Survival Rate") +
+  scale_fill_manual(values=c("blue", "orange", "green", "purple")) +
+  theme_minimal()
+
+
+set.seed(123)
+df_repro <- data.frame(
+  Clutch_Size = sample(100:150, size=length(years), replace=TRUE),
+  Population_Change = c(NA, diff(df_logistic$Conservation))
+)
+
+ggplot(df_repro, aes(x=Clutch_Size, y=Population_Change)) +
+  geom_point(color="purple", alpha=0.7) +
+  labs(title="Reproductive Output vs. Population Change",
+       x="Clutch Size (Eggs per Clutch)", y="Annual Population Change") +
+  theme_minimal()
+
+
+
+```
+
+## **Findings & Interpretation**
+
+Logistic growth model and age-structured Leslie matrix model project Hawksbill Turtle population trends from 2021–2071, comparing baseline decline with conservation-driven recovery.
+
+Without conservation, the population drops below 10,000 by 2071 (r = -0.02) due to poaching, habitat loss, bycatch, and climate change. Low juvenile survival (0.25–10%) creates a bottleneck, limiting recovery.
+
+With conservation, the population stabilizes and surpasses 30,000 by 2071 (r = 0.015). MPAs, TEDs, and anti-poaching activities improve survival, with no loss of habitat, and ensure recovery in the long term.
+
+The age-structured model supports that juvenile survival is the most significant limiting factor. Egg survival (~10%) bottlenecks recruitment, and high adult survival (~85–90%) suggests that it is worth saving breeding-age turtles. Large clutch sizes (~150 eggs per season) contribute to population growth but only if juvenile survival is improved, which suggests the value of nesting site protection.
+
+---
+
+## **Predictions & Conservation Steps**
+
+Without conservation, Hawksbill Turtle numbers will decline significantly, experiencing high fragmentation and local extinctions by the year 2071. Habitat destruction and poaching will further constrain recovery. Conservation permits stabilization and recovery of numbers. These measures are of greatest significance: Turtle Excluder Devices (TEDs) to reduce bycatch, Marine Protected Areas (MPAs) to safeguard nesting areas, and shading beaches to address rising temperatures that kill hatchlings. Strengthening anti-poaching law enforcement and sustainable ecotourism will continue to boost recovery. To improve conservation planning, new models need to include stochastic variables like hurricanes and habitat destruction, so predictions become more accurate for long-term population persistence.
+
+---
+
+## **Discussion & Results**
+
+The logistic growth model foresees a rapid decline to less than 10,000 in 2071 due to the low juvenile survival and loss of habitat, while the age-structured Leslie matrix model exhibits that the conservation zeroes <30,000 populations. Juvenile survival still remains the most critical problem, so that the necessity of the conservation efforts from the very beginning of their life. Poaching, bycatch, and the loss of habitat, if left uncontrolled, the species will die out. MPAs, TEDs, and anti-poaching laws are the most suitable means of protecting the species in this particular situation. Taking care of the turtles habitat, human intervention, and possible breeding can aid this particular scenario. 
+
+## **Conservation Strategies & Future Applications**
+On the one hand, to stop the further decline of the turtle - the focus of conservation projects, which can be done by TEDs reducing bycatch, MPAs enrolling protection for nesting beaches, and through the hatchery programs bettering juvenile survival. The construction of hatcheries and the involvement of the communities in the process will be of great importance in the recovery. Also, the enforcement of the stricter anti-poaching laws, and the implementation of the climate adaptation measures for example shading the beach where the shades nesting beaches will also offer a great help.
+
+## **Conclusion**
+By the year of 2071, the species would die out (thats with or without conservation). Not only adult mortality control through law enforcement and community-based measures, but also drastic improvement in the juvenile population can leverage the total population to exceed 30,000 capture. Comprehending that the restoration of marine and ocean life is essentially the provision of a system that sustains life by maintaining biodiversity, the study emphasizes the importance of conservation and how it benefits from using population models in conservation efforts, which are usually marine ones.
+
+
+
+
+
+
+#### References
+
+- Meylan, A. B., & Donnelly, M. (1999). Status justification for listing the hawksbill turtle (*Eretmochelys imbricata*) as Critically Endangered on the 1996 IUCN Red List of Threatened Animals. *Chelonian Conservation and Biology, 3*(2), 200-224.
+- Mortimer, J. A., & Donnelly, M. (2008). Hawksbill Turtle (*Eretmochelys imbricata*): Marine Turtle Specialist Group 2008 IUCN Red List status assessment. *IUCN Red List of Threatened Species*.
+- Blumenthal, J. M., Austin, T. J., Bell, C. D., Broderick, A. C., Ebanks-Petrie, G., & Godley, B. J. (2009). Ecology of hawksbill turtles (*Eretmochelys imbricata*) on a western Caribbean foraging ground. *Chelonian Conservation and Biology*.

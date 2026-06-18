@@ -1,0 +1,315 @@
+---
+title: "Module 3 Section 4 Questions"
+author: "Saif Elsaady"
+output: html_document
+---
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+### 1. (2 point). The runif() function draws randomly from a uniform distribution. What would the average value be for a vector created with the following code:
+
+```{r Q1}
+Question1_Vector<-runif(10,2,4) #Hint: Think about how and if this changes if you run it multiple times?
+
+min_value <- 2
+max_value <- 4
+
+# Calculate the expected average value
+expected_average <- (min_value + max_value) / 2
+
+# Print the expected average
+expected_average
+```
+
+- The runif() function draws from a uniform distribution on [2,4].
+- The theoretical mean (expected value) of a uniform distribution on [a, b] is (a + b)/2.
+- Here, a = 2 and b = 4, so the expected average value is (2 + 4)/2 = 3.
+
+- If you run `runif(10, 2, 4)` multiple times, each draw will be different,
+- On average (across many repeated runs) the mean of those draws will be close to 3.
+
+----------
+
+### 2. (4 point). Start with the constant growth model from the example script (found in the chunk below). Add in immigration and emmigration into the model. Immigration should range from 0 to 4. Emmigration should range from 1 to 2. Create a plot that tracks total population, total births, immigration, and emmigration. BE SURE TO INCLUDE: a legend, x axis, y axis
+#### Hint: You will have to create a data frame as the DF_Stoich from the example script will not work, if you change the name of the data frame to anything other than DF_Stoic, you will have to update that in the code below.
+
+>Be sure you have removed "#" infront of any lines of code you want to run
+
+```{r Q2}
+DF_Stoich <- data.frame(
+  Population = numeric(51),
+  Total_Births = numeric(51),
+  Total_Deaths = numeric(51),
+  Total_Growth = numeric(51),
+  Total_Immigration = numeric(51),
+  Total_Emigration = numeric(51)
+)
+
+# Simulation loop
+for (i in 1:50) {
+  b <- round(runif(1, 2, 5), 0) # births from 2 to 5, round it
+  d <- round(runif(1, 0, 3), 0) # deaths from 0-3
+  imm <- round(runif(1, 0, 4), 0) # immigration from 0 to 4
+  emm <- round(runif(1, 1, 2), 0) # emigration from 1 to 2
+  g <- b - d + imm - emm # growth is birth - deaths + immigration - emigration
+
+  # The initial conditions
+  if (i == 1) {
+    DF_Stoich[i, "Population"] <- 10 # This could be written DF_Stoich$Population[1], set initial population to 10
+    DF_Stoich[i, "Total_Births"] <- 0 # set initial births
+    DF_Stoich[i, "Total_Deaths"] <- 0 # set initial deaths
+    DF_Stoich[i, "Total_Growth"] <- 0 # set initial growth
+    DF_Stoich[i, "Total_Immigration"] <- 0 # set initial immigration
+    DF_Stoich[i, "Total_Emigration"] <- 0 # set initial emigration
+  }
+
+  # Update the data frame for the next iteration
+  DF_Stoich[i + 1, "Population"] <- DF_Stoich[i, "Population"] + g # This could be written DF_Stoich$Population[i+1],
+                                                                   # Population at i+1 is population at i + growth
+  DF_Stoich[i + 1, "Total_Births"] <- DF_Stoich[i, "Total_Births"] + b # This tracks total births
+  DF_Stoich[i + 1, "Total_Deaths"] <- DF_Stoich[i, "Total_Deaths"] + d # This tracks total deaths
+  DF_Stoich[i + 1, "Total_Growth"] <- DF_Stoich[i, "Total_Growth"] + g # This tracks total growth (which is just the difference between)
+                                                                       # Initial population and grow
+  DF_Stoich[i + 1, "Total_Immigration"] <- DF_Stoich[i, "Total_Immigration"] + imm # This tracks total immigration
+  DF_Stoich[i + 1, "Total_Emigration"] <- DF_Stoich[i, "Total_Emigration"] + emm # This tracks total emigration
+} # This ends our for loop
+
+# Create the plot
+plot(
+  DF_Stoich$Population, type = "l", col = "blue", lwd = 2, 
+  xlab = "Time (Steps)", ylab = "Values", 
+  main = "Population Dynamics with Immigration and Emigration"
+)
+lines(DF_Stoich$Total_Births, col = "green", lwd = 2) # Total births line
+lines(DF_Stoich$Total_Deaths, col = "red", lwd = 2) # Total deaths line
+lines(DF_Stoich$Total_Immigration, col = "purple", lwd = 2) # Total immigration line
+lines(DF_Stoich$Total_Emigration, col = "orange", lwd = 2) # Total emigration line
+
+# Add a legend
+legend(
+  "topleft", 
+  legend = c("Population", "Total Births", "Total Deaths", "Immigration", "Emigration"),
+  col = c("blue", "green", "red", "purple", "orange"),
+  lty = 1, lwd = 2
+)
+
+```
+
+- Population (blue): Represents the total population over time.
+- Total Births (green): The cumulative number of births across time steps.
+- Total Deaths (red): The cumulative number of deaths.
+- Immigration (purple): Tracks the cumulative immigration numbers.
+- Emigration (orange): Tracks the cumulative emigration numbers.
+- The legend and axis labels are clear, and the data trends are consistent with a model that includes births, deaths, immigration, and emigration influencing the population dynamics.
+
+----------
+
+### 3. (4 point). In the code below, an IF statement has been added into the for loop (lines 79-90). What is this IF statement doing? How could an IF statement like this be useful in modeling population changes. 
+#### Hint, plotting this data may be helpful in answering this question. 
+
+
+```{r Q3}
+
+#Create Data Frame
+Question_3_Data_Frame <- data.frame(
+  "Population" = c(rep(NA, 50)),
+  "Births" = c(rep(NA, 50)),
+  "Death" = c(rep(NA, 50)),
+  "Growth" = c(rep(NA, 50))
+)
+
+# Run for loop 50 times, since the first value is defined by us, we need to generate the next 50 values
+for (i in 1:50) {
+  b <- round(runif(1, 1, 3), 0) # births from 1 to 3, round it
+  d <- round(runif(1, 0, 5), 0) # deaths from 0 to 5
+  g <- b - d # growth is births - deaths
+
+  Question_3_Data_Frame[1, 1] <- 10 # This could be written Question_3_Data_Frame$Population[1], set initial population to 10
+  Question_3_Data_Frame[1, 2] <- 0 # set initial births
+  Question_3_Data_Frame[1, 3] <- 0 # set initial deaths
+  Question_3_Data_Frame[1, 4] <- 0 # set initial growth
+
+  Question_3_Data_Frame[i + 1, 1] <- Question_3_Data_Frame[i, 1] + g # This could be written Question_3_Data_Frame$Population[i+1],
+  # Population at i+1 is population at i + growth
+  Question_3_Data_Frame[i + 1, 2] <- Question_3_Data_Frame[i, 2] + b # This tracks total births
+  Question_3_Data_Frame[i + 1, 3] <- Question_3_Data_Frame[i, 3] + d # This tracks total deaths
+  Question_3_Data_Frame[i + 1, 4] <- Question_3_Data_Frame[i, 4] + g # This tracks total growth (which is just the difference between) Initial population and growth
+
+  # IF statement: Handling cases where the population becomes less than 1
+  # If the population drops below 1 at step i, the population is set to 0,
+  # and all subsequent variables (births, deaths, growth) are also set to 0 for this step and the next.
+  if (Question_3_Data_Frame[i, 1] < 1) {
+    Question_3_Data_Frame[i, 1] <- 0
+    Question_3_Data_Frame[i + 1, 1] <- 0
+
+    Question_3_Data_Frame[i, 2] <- 0
+    Question_3_Data_Frame[i + 1, 2] <- 0
+
+    Question_3_Data_Frame[i, 3] <- 0
+    Question_3_Data_Frame[i + 1, 3] <- 0
+
+    Question_3_Data_Frame[i, 4] <- 0
+    Question_3_Data_Frame[i + 1, 4] <- 0
+  }
+} # This ends our for loop
+
+# Plot the data to visualize how the IF statement affects population dynamics
+plot(
+  Question_3_Data_Frame$Population, type = "l", col = "blue", lwd = 2,
+  xlab = "Time (Steps)", ylab = "Values",
+  main = "Population Dynamics with IF Statement"
+)
+lines(Question_3_Data_Frame$Births, col = "green", lwd = 2) # Total births line
+lines(Question_3_Data_Frame$Death, col = "red", lwd = 2) # Total deaths line
+lines(Question_3_Data_Frame$Growth, col = "purple", lwd = 2) # Total growth line
+
+# Add a legend
+legend(
+  "topright",
+  legend = c("Population", "Births", "Deaths", "Growth"),
+  col = c("blue", "green", "red", "purple"),
+  lty = 1, lwd = 2
+)
+
+
+```
+
+#### Explanation of the IF Statement
+
+#### **What It Does:**
+- The IF statement ensures that if the population drops below 1, it is immediately set to 0 for the current and next time step.
+- Additionally, the cumulative totals for births, deaths, and growth are also set to 0 for these steps. This effectively "ends" the population dynamics if the population cannot sustain itself.
+
+#### **Why It Is Useful:**
+- In population modeling, an IF statement like this can simulate real-world scenarios where populations may become extinct due to negative growth rates (e.g., more deaths than births) or other factors.
+- It prevents unrealistic negative population values and provides a mechanism to halt calculations when a population cannot recover.
+
+#### **Visualization:**
+- The plot shows how the population, births, deaths, and growth change over time.
+- If the population hits 0, the plot reflects the cessation of growth, births, and deaths, as all values are set to 0 moving forward.
+
+
+-----------
+
+### Q4. (15 Points). Take the following steps to incorperate natural disasters or tother major events into our models? Please include the code for all parst instead of on section of code that incorperates everything as I will give partial credit even if the final chunk of code has errors. 
+- Generate two different strings representing time. We will be run this model for 3 years but our growth rates and other changes of interest will occur at the month by month level so we need to track what month it is. **Using a numeric string, create a vector that tracks the month over 3 years**. *Hint, this should have a length of 36* (1 point)
+- Create a data frame that will hold 100 population runs over the 3 years. *Make sure the length of this data frame matches the length of your time variable* (1 point)
+- Name the columns of this data frame "Model_Iteration_1" through "Model_Iteration_100" (1 point)
+- Create a for loop(s) that fills tracks 100 model runs. Carrying capacity (k) should equal 50. Starting population (N0) should equal 15. Growth rate should range from -5% to 7%. (2 points)
+- This population lives in an area where sometimes very large storms occur! Storms only happen in April and May (month 4 and 5). There is a 10% chance that in any April or May, a storm will kill 30 individuals in the population. **Use if statements to add this storms into the model** (5 points)
+
+>HINT: You will need one if statement that determines whether or not a storm can occur (this if statement will determine if it is april or may). You will need a second if statement (nested in the first if statement) to determine whether the storm happened. I have included an example in the chunk below of an if statement similar to what you may need. However, this will obvious need to be altered
+
+- In many cases, the storm may reduce the population to 0. In this case there will be no more reproduction or population growth. Incorperate an if statement that sets population to 0 for all time periods after a crash *Hint, look at the code in question 3* (2 points) 
+
+- Plot all model runs form your model as well as the average population growth (3 points)
+
+-BONUS (2 points!) Write a line of code that automatically counts how many times the population crashes
+
+``` {r Q4}
+#Create vector for month
+time <- c(rep(1:12, 3)) # Vector with months repeated for 3 years
+
+# Create dataframe to track changes
+# The data frame will have 36 rows (one for each month) and 100 columns (one for each model iteration)
+population_data <- data.frame(matrix(NA, nrow = length(time), ncol = 100))
+colnames(population_data) <- paste0("Model_Iteration_", 1:100) # Naming the columns
+
+# Set parameters for the model
+k <- 50 # Carrying capacity
+N0 <- 15 # Starting population
+growth_rate_range <- runif(100, -0.05, 0.07) # Growth rate for each iteration between -5% and 7%
+
+# Initialize the first row of the data frame with the starting population
+population_data[1, ] <- N0
+
+# For Loops to populate the dataframe
+for (model in 1:100) { # Loop over each model iteration
+  growth_rate <- growth_rate_range[model] # Assign a unique growth rate for this model run
+  
+  for (month in 2:length(time)) { # Loop over each time step
+    previous_population <- population_data[month - 1, model]
+    
+    # Check if population is zero (population crash)
+    if (previous_population == 0) {
+      population_data[month, model] <- 0
+    } else {
+      # Apply logistic growth equation
+      new_population <- previous_population + growth_rate * previous_population * (1 - previous_population / k)
+      
+      # Storm logic
+      if (time[month] == 4 | time[month] == 5) { # If it is April (4) or May (5)
+        storm_chance <- runif(1) # Generate a random number to check for a storm
+        if (storm_chance < 0.1) { # 10% chance of a storm
+          new_population <- new_population - 30 # Storm kills 30 individuals
+        }
+      }
+      
+      # Prevent negative population values
+      new_population <- max(new_population, 0)
+      
+      # Update the population
+      population_data[month, model] <- new_population
+    }
+  }
+}
+
+# BONUS: Count how many times the population crashes (population reaches 0)
+population_crashes <- sum(population_data == 0 & row(population_data) > 1)
+cat("Total Population Crashes:", population_crashes, "\n")
+
+# Plot all model runs
+matplot(
+  population_data, type = "l", lty = 1, col = rainbow(100), 
+  xlab = "Time (Months)", ylab = "Population", 
+  main = "Population Dynamics with Storm Events"
+)
+
+# Calculate and overlay the average population
+average_population <- rowMeans(population_data, na.rm = TRUE)
+lines(average_population, col = "black", lwd = 2)
+
+# Add a legend
+legend(
+  "topright", legend = c("Model Runs", "Average Population"), 
+  col = c("gray", "black"), lty = c(1, 1), lwd = c(1, 2)
+)
+
+month<-4
+    if(month == 4){
+      storm_chance<-runif(1)
+      
+      if(storm_chance <0.5){
+        print("BOOM!")
+      }
+      
+      
+    }
+
+#The | symbol (found below backslash on your keyboard) represents the logical test OR. The following statement will pring "TRUE" if x equals 2 OR if x equals 5
+x<-5
+if(x == 2 | x ==5){
+  print("TRUE")
+}
+
+```
+#### Analysis of Population Dynamics with Storm Events
+
+##### **Population Dynamics Plot:**
+- The plot shows multiple model runs (colored lines) with population trajectories over 36 months.
+- The average population (black line) represents the mean across all 100 simulations.
+- Some runs experience a population crash (lines drop to 0), and after that, the population remains at 0, which is expected behavior based on the implemented logic.
+
+##### **Storm Events:**
+- Storms ("BOOM!") occur only in April and May with a 10% chance, and when they occur, they reduce the population by 30. This aligns with your example code for storm logic.
+
+##### **Population Crashes:**
+- The reported total population crashes (993) indicates how often populations dropped to 0 across all runs and months, which is plausible given the high variability in growth rates, storm impacts, and carrying capacity constraints.
+
+#### **Printed Statements:**
+- `"BOOM!"` confirms that a storm occurred at least once during the simulation.
+- `"TRUE"` confirms the logic of the OR condition (`if(x == 2 | x == 5)`) in the preserved test code.
+

@@ -1,0 +1,147 @@
+---
+title: "Final Project"
+author: "Saif Elsaady"
+date: "2025-02-24"
+output: html_document
+---
+
+```{r full_analysis, echo=TRUE, message=FALSE, warning=FALSE}
+# Load necessary libraries
+library(ggplot2)
+library(dplyr)
+library(readr)
+
+# Read datasets from Downloads directory
+bird_surveys <- read_csv("~/Downloads/46_bird_surveys.csv")
+bird_observations <- read_csv("~/Downloads/46_bird_observations.csv")
+bird_locations <- read_csv("~/Downloads/46_bird_survey_locations.csv")
+
+# Ensure only necessary columns are selected to avoid duplication issues
+bird_surveys <- bird_surveys %>%
+    select(survey_id, site_code, survey_date, location_type)
+
+bird_locations <- bird_locations %>%
+    select(site_code, location_type) # Ensuring location_type remains
+
+# Merge datasets using correct column names
+bird_data <- bird_observations %>%
+    inner_join(bird_surveys, by = c("survey_id", "site_code", "survey_date")) %>%
+    inner_join(bird_locations, by = "site_code", suffix = c("_survey", "_location"))
+
+# Handle potential duplicate location_type column
+bird_data <- bird_data %>%
+    mutate(location_type = coalesce(location_type_survey, location_type_location)) %>%
+    select(-location_type_survey, -location_type_location)
+
+# Convert survey_date to year format for trend analysis
+bird_data$year <- as.numeric(format(bird_data$survey_date, "%Y"))
+
+
+# Figure 1: Bird Species Diversity Over Time
+
+species_diversity <- bird_data %>%
+    group_by(year) %>%
+    summarise(species_richness = n_distinct(code))  # 'code' represents species identifier
+
+ggplot(species_diversity, aes(x = year, y = species_richness)) +
+    geom_line(color = "blue", size = 1) +
+    geom_point(color = "red", size = 2) +
+    labs(title = "Bird Species Diversity Over Time",
+         x = "Year",
+         y = "Number of Unique Species") +
+    theme_minimal()
+
+
+# Figure 2: Bird Abundance by Habitat Type
+habitat_abundance <- bird_data %>%
+    group_by(location_type) %>%
+    summarise(total_abundance = sum(bird_count, na.rm = TRUE))
+
+ggplot(habitat_abundance, aes(x = reorder(location_type, -total_abundance), 
+                              y = total_abundance, fill = location_type)) +
+    geom_bar(stat = "identity") +
+    labs(title = "Bird Abundance by Habitat Type",
+         x = "Habitat Type",
+         y = "Total Bird Count") +
+    theme_minimal() +
+    theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+```
+
+
+```{r statistical_analysis, echo=TRUE, message=FALSE, warning=FALSE}
+library(car)  
+library(lmtest)  
+
+
+# Ensure species richness is correctly computed per survey & location
+bird_richness <- bird_data %>%
+    group_by(survey_id, location_type, year) %>%
+    summarise(species_richness = n_distinct(code), .groups = 'drop')
+
+# Ensure location_type is a factor for ANOVA
+bird_richness$location_type <- as.factor(bird_richness$location_type)
+
+
+# Run ANOVA
+anova_model <- aov(species_richness ~ location_type, data = bird_richness)
+anova_results <- summary(anova_model)
+print(anova_results)
+
+# Assumption Check: Homogeneity of Variance (Levene's Test)
+levene_test <- leveneTest(species_richness ~ location_type, data = bird_richness)
+print(levene_test)
+
+# Post-hoc Analysis: Tukey's HSD Test for pairwise comparisons
+tukey_results <- TukeyHSD(anova_model)
+print(tukey_results)
+
+
+# Running the regression model
+lm_model <- lm(species_richness ~ year, data = bird_richness)
+lm_results <- summary(lm_model)
+print(lm_results)
+
+# Assumption Check: Normality of Residuals
+residuals_lm <- residuals(lm_model)
+
+# 1. Q-Q Plot for Visual Normality Check
+qqnorm(residuals_lm)
+qqline(residuals_lm, col = "red")
+
+# 2. Histogram of Residuals
+hist(residuals_lm, breaks = 30, main = "Histogram of Residuals", col = "lightblue")
+
+# 3. Kolmogorov-Smirnov Test (For Large Datasets)
+ks_test_results <- ks.test(residuals_lm, "pnorm", mean(residuals_lm), sd(residuals_lm))
+print(ks_test_results)
+
+# Assumption Check: Homoscedasticity
+bptest_results <- bptest(lm_model)  # Breusch-Pagan test
+print(bptest_results)
+
+# Residuals vs Fitted Plot
+par(mfrow = c(2, 2))
+plot(lm_model)
+
+# Extracting key results
+anova_p_value <- anova_results[[1]]$`Pr(>F)`[1]
+lm_p_value <- lm_results$coefficients["year", "Pr(>|t|)"]
+lm_r_squared <- lm_results$r.squared
+
+cat("ANOVA Results: p-value =", anova_p_value, "\n")
+cat("Linear Regression: R² =", lm_r_squared, ", p-value =", lm_p_value, "\n")
+
+if (anova_p_value < 0.05) {
+    cat("Habitat type significantly affects bird species richness.\n")
+} else {
+    cat("No significant difference in bird species richness across habitats.\n")
+}
+
+if (lm_p_value < 0.05) {
+    cat("There is a statistically significant trend in bird species diversity over time.\n")
+} else {
+    cat("No significant trend in bird species diversity over time.\n")
+}
+
+```

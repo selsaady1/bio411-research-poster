@@ -1,0 +1,272 @@
+Running script: C:/Users/Saifs/Downloads/Module2_Section 2_Elsaady.R 
+
+>  # Saif Elsaady 
+>  # Date: 1/26/2024 
+>   
+>  # File Setup -------------------------------------------------------------- 
+>  # Load necessary libraries 
+>  library(tidyverse)  # For data manipulation and visualization 
+>  library(tidylog)    # Provides logs for tidyverse functions 
+>   
+>  # Question 1 -------------------------------------------------------------- 
+>  # Load the dataset into R 
+>  downloads_dir <- file.path("C:/Users", Sys.getenv("USERNAME"), "Downloads") 
+>  file_path <- file.path(downloads_dir, "LawnQuadrats_PHX_2017.csv") 
+>   
+>  # Read the data set into R 
+>  lawn_cover <- read_csv(file_path)  # Load data set into a dataframe called lawn_cover 
+[1mindexed[0m [32m0B[0m in [36m 0s[0m, [32m0B/s[0m[1mindexed[0m [32m2.15GB[0m in [36m 0s[0m, [32m2.15GB/s[0m                                                                                          >   
+>  # Verify the dataset structure 
+>  glimpse(lawn_cover)  # Check the structure and types of columns 
+Rows: 366
+Columns: 10
+$ city                   [3m[38;5;246m<chr>[39m[23m "Phoenix", "Phoenix", "Phoenix", "Phoenix", "Phoenix", "Pho…
+$ site_type              [3m[38;5;246m<chr>[39m[23m "High intensity lawn", "High intensity lawn", "High intensi…
+$ site_id                [3m[38;5;246m<chr>[39m[23m "PHX-LH-1", "PHX-LH-1", "PHX-LH-1", "PHX-LH-1", "PHX-LH-1",…
+$ date                   [3m[38;5;246m<chr>[39m[23m "4/3/17", "4/3/17", "4/3/17", "4/3/17", "4/3/17", "4/3/17",…
+$ front_quadrats_sampled [3m[38;5;246m<dbl>[39m[23m 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3,…
+$ back_quadrats_sampled  [3m[38;5;246m<dbl>[39m[23m 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3,…
+$ cover_type             [3m[38;5;246m<chr>[39m[23m "Bare ground", "Plant", "Plant", "Plant", "Plant", "Bare gr…
+$ species_name_cover     [3m[38;5;246m<chr>[39m[23m [31mNA[39m, "Yabea microcarpa", "Cynodon dactylon", "Hordeum jubatu…
+$ quadrat                [3m[38;5;246m<chr>[39m[23m "b1", "b1", "b1", "b1", "b1", "b2", "b2", "b2", "b2", "b2",…
+$ cover_class            [3m[38;5;246m<dbl>[39m[23m 4, 1, 7, 1, 1, 7, 2, 1, 1, 6, 5, 5, 4, 1, 8, 5, 6, 6, 1, 6,…
+>  # This dataset contains plant data from different yard types with details like species names and cover classes. 
+>   
+>  # Analyze Bermuda grass coverage ------------------------------------------ 
+>  # What is the overall goal? 
+>  # The goal is to create a new dataframe showing the average cover class  
+>  # and the number of quadrats containing Bermuda grass (Cynodon dactylon) by site type. 
+>   
+>  # Step-by-step explanation of the provided code 
+>  cynodon <- lawn_cover %>% filter(species_name_cover == "Cynodon dactylon") %>% group_by(site_type) %>% summarise(avg_cover = mean(cover_class, na.rm = TRUE), number_quadrats = n()) %>% ungroup() %>% arrange(-avg_cover) 
+>   
+>  #cynodon <- lawn_cover %>% 
+>    # Step 1: Filter rows for Bermuda grass only 
+>  #  filter(species_name_cover == "Cynodon dactylon") %>% 
+>     
+>    # Step 2: Group by site type to analyze data separately for each yard type 
+>   # group_by(site_type) %>% 
+>     
+>    # Step 3: Calculate two things for each site type: 
+>    #  - avg_cover: Average cover class of Bermuda grass 
+>    #  - number_quadrants: Number of quadrants where Bermuda grass was found 
+>  #  summarise(avg_cover = mean(cover_class, na.rm = TRUE),  # Calculate average cover class 
+>     #         number_quadrats = n()) %>%                  # Count number of quadrats 
+>     
+>    # Step 4: Data to remove grouping after calculations 
+>   # ungroup() %>% 
+>     
+>    # Step 5: Arrange the site types by descending order of average cover class 
+>   # arrange(-avg_cover) 
+>   
+>  # View the resulting dataframe 
+>  print(cynodon) 
+# A tibble: 4 × 3
+  site_type               avg_cover number_quadrats
+  <chr>                       <dbl>           <int>
+1 High intensity lawn          6.17              35
+2 Low intensity lawn           5.73              15
+3 Low impact on hydrology      4.78               9
+4 Wildlife certified           4.67              12
+>  # High intensity lawn has the highest average cover class: 6.17. 
+>   
+>  # Question 2 - Average Plant Abundance Analysis ---------------------------------- 
+>   
+>  # Step 1: Create the dataframe 
+>  # Calculate the average cover and the number of quadrats for each species 
+>  #average_plant_abundance <- lawn_cover %>% 
+>   # group_by(species_name_cover) %>%  # Group data by species name 
+>   # summarise( 
+>    #  avg_cover = mean(cover_class, na.rm = TRUE),  # Calculate the average cover class 
+>     # number_quadrats = n()  # Count the number of quadrats where species appear 
+>    #) %>% 
+>  #  arrange(-avg_cover)  # Sort by descending order of average cover 
+>   
+>  average_plant_abundance <- lawn_cover %>% group_by(species_name_cover) %>%  summarise(avg_cover = mean(cover_class, na.rm = TRUE),  number_quadrats = n()  ) %>% arrange(-avg_cover)   
+>   
+>  # View the dataframe 
+>  print(average_plant_abundance) 
+# A tibble: 57 × 3
+   species_name_cover      avg_cover number_quadrats
+   <chr>                       <dbl>           <int>
+ 1 Citrus sinensis              7                  2
+ 2 Cynodon dactylon             5.65              71
+ 3 Daucus sp                    5.5                6
+ 4 Stenotaphrum secundatum      5.22              18
+ 5 Lolium perenne               4.96              26
+ 6 Morus alba                   4.5                2
+ 7 Lolium arundinaceum          4.22               9
+ 8 <NA>                         4.05              23
+ 9 Unknown aster small          4                  3
+10 Torilis nodosa               3.58              12
+# ℹ 47 more rows
+# ℹ Use `print(n = ...)` to see more rows
+>   
+>  # Step 2: How many species are there? 
+>  # Count the number of unique species 
+>  total_species <- n_distinct(average_plant_abundance$species_name_cover) 
+>  cat("Total number of species:", total_species, "\n") 
+Total number of species: 57 
+>   
+>  # Step 3: How many species are considered "unknown"? 
+>  # Count missing species names (NA values) 
+>  missing_species_count <- sum(is.na(lawn_cover$species_name_cover)) 
+>   
+>  # Count explicitly labeled "unknown" species 
+>  unknown_species_count <- sum(tolower(trimws(lawn_cover$species_name_cover)) == "unknown",na.rm = TRUE) 
+>   
+>  # Total number of unknown species 
+>  total_unknowns <- missing_species_count + unknown_species_count 
+>  cat("Number of species considered unknowns:", total_unknowns, "\n") 
+Number of species considered unknowns: 24 
+>   
+>  # Step 4: Which species has the highest average cover? 
+>  # Extract the species with the highest average cover 
+>  highest_avg_cover_species <- average_plant_abundance %>% slice_max(avg_cover, n = 1) 
+>   
+>  # Print the species with the highest average cover 
+>  print(highest_avg_cover_species) 
+# A tibble: 1 × 3
+  species_name_cover avg_cover number_quadrats
+  <chr>                  <dbl>           <int>
+1 Citrus sinensis            7               2
+>   
+>  # Common name for the species with the highest cover  
+>  cat("Common name for the species with the highest average cover is: Orange tree (Citrus sinensis)\n") 
+Common name for the species with the highest average cover is: Orange tree (Citrus sinensis)
+>   
+>   
+>   
+>  # Question 3 (10 pts) - Precipitation Data Analysis ---------------------------------- 
+>  library(janitor) 
+>  # Step 1: Load the dataset (1 pt) 
+>  # Define the file path for the dataset 
+>  downloads_dir <- file.path("C:/Users", Sys.getenv("USERNAME"), "Downloads") 
+>  file_path <- file.path(downloads_dir, "FloodControlDistrict_ASUSouth_Precipitation2010_2018.csv") 
+>   
+>  # Load the precipitation data 
+>  precipitation_data <- read_csv(file_path) 
+[1mindexed[0m [32m0B[0m in [36m 0s[0m, [32m0B/s[0m[1mindexed[0m [32m2.15GB[0m in [36m 0s[0m, [32m2.15GB/s[0m                                                                                          >   
+>  # Step 2: Analyze column names 
+>  # Look at column names in the dataset 
+>  cat("Original column names:\n") 
+Original column names:
+>  print(colnames(precipitation_data)) 
+[1] "Station ID"         "Year"               "Date"               "Precipitation (in)"
+>  # Observation: The column names include spaces and special characters, which may cause issues in R. 
+>   
+>  # Step 3: Rename the `Station ID` column to `station_id`  
+>  precipitation_data <- precipitation_data %>% rename(station_id = `Station ID`) 
+>   
+>  # Verify the column name change 
+>  cat("Column names after renaming `Station ID`:\n") 
+Column names after renaming `Station ID`:
+>  print(colnames(precipitation_data)) 
+[1] "station_id"         "Year"               "Date"               "Precipitation (in)"
+>   
+>  # Step 4: Use `clean_names()` to standardize column names  
+>  # Clean all column names to screaming snake case 
+>  precipitation_data <- precipitation_data %>% clean_names(case = "screaming_snake") 
+>   
+>  # Verify the cleaned column names 
+>  cat("Column names after cleaning with `clean_names()`:\n") 
+Column names after cleaning with `clean_names()`:
+>  print(colnames(precipitation_data)) 
+[1] "STATION_ID"       "YEAR"             "DATE"             "PRECIPITATION_IN"
+>   
+>  # Step 5: Create a new column with rainfall in centimeters  
+>  # Conversion: 1 inch = 2.54 cm 
+>  precipitation_data <- precipitation_data %>% mutate(PRECIPITATION_CM = PRECIPITATION_IN * 2.54) 
+>   
+>  # Verify the new column 
+>  cat("Preview of data with the new column `PRECIPITATION_CM`:\n") 
+Preview of data with the new column `PRECIPITATION_CM`:
+>  print(head(precipitation_data)) 
+# A tibble: 6 × 5
+  STATION_ID  YEAR DATE   PRECIPITATION_IN PRECIPITATION_CM
+       <dbl> <dbl> <chr>             <dbl>            <dbl>
+1      67500  2010 1/1/10                0                0
+2      67500  2010 1/2/10                0                0
+3      67500  2010 1/3/10                0                0
+4      67500  2010 1/4/10                0                0
+5      67500  2010 1/5/10                0                0
+6      67500  2010 1/6/10                0                0
+>   
+>  # Step 6: Count the number of missing precipitation values  
+>  # Count the rows where `PRECIPITATION_IN` is NA 
+>  missing_values_count <- sum(is.na(precipitation_data$PRECIPITATION_IN)) 
+>  cat("Number of days with missing precipitation values:", missing_values_count, "\n") 
+Number of days with missing precipitation values: 9 
+>   
+>  # Step 7: Filter data for 2018 precipitation values  
+>  # Using a pipe (%>%) 
+>  precipitation_2018_pipe <- precipitation_data %>% filter(YEAR == 2018) 
+>   
+>  #  Without using a pipe 
+>  precipitation_2018_no_pipe <- precipitation_data[precipitation_data$YEAR == 2018, ] 
+>   
+>   
+>  # Verify the filtered data 
+>  cat("Preview of 2018 data (pipe version):\n") 
+Preview of 2018 data (pipe version):
+>  print(head(precipitation_2018_pipe)) 
+# A tibble: 6 × 5
+  STATION_ID  YEAR DATE   PRECIPITATION_IN PRECIPITATION_CM
+       <dbl> <dbl> <chr>             <dbl>            <dbl>
+1      67500  2018 1/1/18                0                0
+2      67500  2018 1/2/18                0                0
+3      67500  2018 1/3/18                0                0
+4      67500  2018 1/4/18                0                0
+5      67500  2018 1/5/18                0                0
+6      67500  2018 1/6/18                0                0
+>   
+>  # Step 8: Calculate total precipitation by year and find the wettest year (3 pts) 
+>  # Group by year and calculate total precipitation 
+>  annual_precipitation <- precipitation_data %>% group_by(YEAR) %>% summarise( TOTAL_PRECIPITATION_CM = sum(PRECIPITATION_CM, na.rm = TRUE))  %>% arrange(-TOTAL_PRECIPITATION_CM)  # Sort by total precipitation 
+>   
+>  # Identify the wettest year 
+>  wettest_year <- annual_precipitation %>% slice_max(TOTAL_PRECIPITATION_CM, n = 1) 
+>   
+>  # Print the results 
+>  cat("Annual precipitation totals (in cm):\n") 
+Annual precipitation totals (in cm):
+>  print(annual_precipitation) 
+# A tibble: 9 × 2
+   YEAR TOTAL_PRECIPITATION_CM
+  <dbl>                  <dbl>
+1  2015                   27.9
+2  2010                   25.6
+3  2014                   22.9
+4  2013                   22.6
+5  2018                   22.5
+6  2016                   14.8
+7  2017                   13.7
+8  2012                   12.2
+9  2011                   11.4
+>   
+>  cat("The wettest year on ASU campus:\n") 
+The wettest year on ASU campus:
+>  print(wettest_year) 
+# A tibble: 1 × 2
+   YEAR TOTAL_PRECIPITATION_CM
+  <dbl>                  <dbl>
+1  2015                   27.9
+>   
+>   
+>   
+>  ### SAVING ----------------------------------------------------------------------------------- 
+>  # Specify the Downloads directory path 
+>  downloads_dir <- file.path("C:/Users", Sys.getenv("USERNAME"), "Downloads") 
+>   
+>  # Define the paths for the R script and the output text file 
+>  script_file <- file.path(downloads_dir, "Module2_Section 2_Elsaady.R") 
+>  output_file <- file.path(downloads_dir, "Module2_Section_2_Elsaady_Output.txt") 
+>   
+>  # Check if the R script exists in the specified path 
+>  if (!file.exists(script_file)) { 
+
+
+An error occurred while running the script:
+<text>:2:0: unexpected end of input
+1: if (!file.exists(script_file)) {
+   ^ 

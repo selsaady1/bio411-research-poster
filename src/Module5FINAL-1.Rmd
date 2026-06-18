@@ -1,0 +1,249 @@
+---
+title: 'Module 5 Overview Assessment: GLMMs, Vegan, and GGplot'
+author: "Saif Elsaady"
+date: "2025-02-17"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+library(readr)
+
+# Set file path 
+file_path <- "~/Downloads/Mouse_Survival.csv"
+
+# Read the CSV file 
+mouse_data <- read_csv(file_path)
+```
+
+## Question 1: Mouse Survival
+### Part 1 - Determining the Distribution of Mouse Survival Data
+The mouse survival data follows a binomial distribution because survival is a binary outcome (0 = No, 1 = Yes)
+```{r survival_distribution, echo=TRUE, message=FALSE, warning=FALSE}
+### Part 1 - Determining the Distribution of Mouse Survival Data
+library(fitdistrplus)
+library(ggplot2)
+str(mouse_data)
+
+mouse_data$Ground_Cover <- as.factor(mouse_data$Ground_Cover)  # Convert to factor
+mouse_data$Hawks_Present <- as.factor(mouse_data$Hawks_Present)  # Convert to factor
+
+# Check unique values in the Survival_Yes column
+table(mouse_data$Survival_Yes)
+hist(mouse_data$Survival_Yes)
+
+# The mouse survival data follows a binomial distribution because survival is a binary outcome (0 = No, 1 = Yes)
+
+```
+## Question 1: Mouse Survival
+### Part 2 - Statistical Test for Survival Variation
+A logistic regression model was used to look at how survival varies with ground cover, hawk presence, and mouse age.
+```{r survival_analysis, echo=TRUE, message=FALSE, warning=FALSE}
+### Part 2 - Statistical Test for Survival Variation
+library(ggplot2)
+library(stats)
+
+# Convert categorical variables to factors
+mouse_data$Ground_Cover <- as.factor(mouse_data$Ground_Cover)
+mouse_data$Hawks_Present <- as.factor(mouse_data$Hawks_Present)
+
+# Fit a logistic regression model (GLM) to predict survival
+survival_model <- glm(Survival_Yes ~ Ground_Cover + Hawks_Present + Mouse_Age, data = mouse_data, family = binomial)
+summary(survival_model)
+
+#A logistic regression model was used to look at how survival varies with ground cover, hawk presence, and mouse age.
+```
+## Question 1: Mouse Survival
+### Part 3 - Significance of Variables and Interpretation
+All variables in the model (Ground Cover, Hawks Presence, and Mouse Age) are statistically significant (p < 0.001). Mice in dense vegetation have 17 times higher odds of survival compared to those in bare soil, while some vegetation also improves survival with a 5.5 times increase in odds. The presence of hawks reduces survival probability by approximately 40%, making it a significant negative factor. Additionally, older mice have a lower chance of survival, with a 12% decrease in survival probability per unit increase in age. The model explains approximately 80% of the variance in survival (Residual Deviance: 11039/13755 ≈ 80%), indicating a strong but not perfect predictive ability.
+  
+
+## Question 2: ESCA Trees
+### Part 1 - Subset Data for "Ulmus parvifolia"
+```{r subset_esca_trees, echo=TRUE, message=FALSE, warning=FALSE}
+### Part 1 - Subset Data for "Ulmus parvifolia"
+library(dplyr)
+file_path <- "~/Downloads/ESCA_Trees.csv"
+esca_data <- read.csv(file_path)
+# Check structure of dataset
+str(esca_data)
+# Subset data for species "Ulmus parvifolia"
+ulmus_data <- esca_data %>% filter(vegetation_scientific_name == "Ulmus parvifolia")
+
+# Display
+head(ulmus_data)
+```
+
+## Question 2: ESCA Trees
+### Part 2 - Determine Distribution of "Height Measured"
+It follows a nomral distribution. 0.4732 of a P value is good enough.
+```{r height_distribution, echo=TRUE, message=FALSE, warning=FALSE}
+library(fitdistrplus)
+library(dplyr)
+library(ggplot2)
+# Subset data for "Ulmus parvifolia"
+ulmus_data <- esca_data %>% filter(vegetation_scientific_name == "Ulmus parvifolia")
+
+#loads of missing values
+
+# Plot histogram
+ggplot(data = ulmus_data, aes(x = height_measured)) +
+  geom_histogram(bins = 30, fill = "blue", color = "black", alpha = 0.7) +
+  labs(title = "Histogram of Height Measured (Ulmus parvifolia)", 
+       x = "Height Measured", 
+       y = "Frequency") +
+  theme_minimal()
+
+hist(ulmus_data$height_measured)
+
+# Perform Shapiro-Wilk test
+shapiro_test <- shapiro.test(ulmus_data$height_measured)
+
+# Print test results
+print(shapiro_test)
+
+```
+
+## Question 2: ESCA Trees
+### Part 3 - Comparing Height by Vegetation Shape and Classification Code
+The linear model analysis indicates that height (height_measured) is significantly influenced by vegetation classification, with naturalized trees being shorter on average (p = 0.00889, estimate = -1.9071) and shade trees being taller (p = 0.02176, estimate = 2.9429). The upright shape classification shows a marginal effect (p = 0.06765), while foundation and street classifications are not significant, meaning they do not strongly impact height. The model explains 71% of the variation (R² = 0.7095), and the F-statistic (5.861, p = 0.005742) confirms its overall significance. This suggests that some vegetation classifications affect height, and that others do not play a meaningful role.
+```{r height_comparison, echo=TRUE, message=FALSE, warning=FALSE}
+# Linear model: Height ~ Vegetation Shape + Vegetation Classification
+# Linear model: Height ~ Vegetation Shape + Vegetation Classification
+UP_LM <- lm(height_measured ~ vegetation_shape_code + vegetation_classification_code, 
+            data = ulmus_data)
+# Display summary of the linear model
+summary(UP_LM)
+```
+
+## Question 2: ESCA Trees
+### Part 4 - Comparing Height Between Vegetation Shape and Classification Code Combinations
+The ANOVA results indicate that vegetation classification code significantly affects height (p = 0.00627).Suggesting different vegetation classifications lead to significant height variations.
+```{r height_posthoc, echo=TRUE, message=FALSE, warning=FALSE}
+# ANOVA to compare height across vegetation shape and classification code combinations
+height_anova <- aov(height_measured ~ vegetation_shape_code * vegetation_classification_code, data = ulmus_data)
+
+# Display ANOVA results
+summary(height_anova)
+```
+
+## Question 3: HMF Plant Composition – Comparing Maple Composition
+### Part 1 - Subset Data for Adult Maple Trees
+```{r subset_maple_trees, echo=TRUE, message=FALSE, warning=FALSE}
+### Part 1 - Subset Data for Adult Maple Trees
+# Load necessary libraries
+library(dplyr)
+
+# Load dataset
+file_path <- "~/Downloads/HMF_Plant_Comp_Data.csv"
+hmf_data <- read.csv(file_path)
+
+# Subset to include only adult maple trees (Genus Acer, no seedlings)
+maple_trees <- hmf_data %>%
+  filter(grepl("^Acer\\.", Species) & !grepl("seedling", Species))
+
+# Display first few rows
+head(maple_trees)
+```
+
+
+## Question 3: HMF Plant Composition – Comparing Maple Composition
+### Part 2 - Two-Way ANOVA: Count Variation by Species and Time Period
+```{r maple_anova, echo=TRUE, message=FALSE, warning=FALSE}
+### Part 2 - Two-Way ANOVA: Count Variation by Species and Time Period
+library(dplyr)
+maple_data <- hmf_data %>%
+  filter(grepl("^Acer", Species, ignore.case = TRUE) & !grepl("seedling", Species, ignore.case = TRUE))
+
+# Run Two-Way ANOVA on Count.Cover by Species and Time_Period
+anova_model <- aov(Count.Cover ~ Species * Time_Period, data = maple_data)
+
+# Display ANOVA summary
+summary(anova_model)
+```
+
+
+
+
+
+## Question 3: HMF Plant Composition – Comparing Maple Composition
+### Part 3 - Visualization: Red Maple Count in Time Period 1 vs. Time Period 4
+```{r red_maple_plot, echo=TRUE, message=FALSE, warning=FALSE}
+### Part 3 - Visualization: Red Maple Count in Time Period 1 vs. Time Period 4
+library(ggplot2)
+library(dplyr)
+# Subset data for Red Maple (Acer rubrum) in Time Periods 1 and 4
+red_maple_data <- hmf_data %>%
+  filter(Species == "Acer.rubrum" & Time_Period %in% c("Period_1", "Period_4"))
+
+# Create the figure
+ggplot(red_maple_data, aes(x = Time_Period, y = Count.Cover, fill = Time_Period)) +
+  geom_violin(alpha = 0.5) +   # Show distribution
+  geom_boxplot(width = 0.2, outlier.shape = NA) +  # Add boxplot for clarity
+  labs(title = "Red Maple (Acer rubrum) Count by Time Period",
+       x = "Time Period",
+       y = "Count Cover") +
+  theme_minimal() +  # Clean theme for better readability
+  theme(legend.position = "none", text = element_text(size = 14))
+```
+
+
+
+
+
+
+
+
+## Question 4: HMF Community Analysis
+```{r hmf_nmds_analysis, echo=TRUE, message=FALSE, warning=FALSE}
+library(vegan)
+library(dplyr)
+library(tidyr)
+library(ggplot2)
+#PART 1
+# Load dataset
+file_path <- "~/Downloads/HMF_Plant_Comp_Data.csv"
+HMF_Trees <- read.csv(file_path)
+
+# Restructure Data for NMDS
+HMF_Wide <- HMF_Trees %>%
+  pivot_wider(names_from = Species, values_from = Count.Cover, values_fill = list(Count.Cover = 0))
+
+# Remove first three columns to keep only numeric species data
+HMF_Wide_NMDS <- HMF_Wide[, -c(1,2,3)]
+
+#PART 2
+# Perform NMDS using only species abundance data
+HMF_NMDS <- metaMDS(HMF_Wide_NMDS, k = 2, trymax = 1000)
+
+# Plot the NMDS result
+plot(HMF_NMDS)
+
+# Display NMDS points
+HMF_NMDS$points
+
+
+#Part 3
+# Extract metadata (Site, Time_Period) for plotting
+HMF_Plotting <- HMF_Wide[, c(1:3)]  # Select first three columns (Site, Time_Period, etc.)
+
+# Add NMDS coordinates to metadata
+HMF_Plotting$NMDS_X <- HMF_NMDS$points[, 1]
+HMF_Plotting$NMDS_Y <- HMF_NMDS$points[, 2]
+
+# Create NMDS plot
+print(ggplot(data = HMF_Plotting, aes(x = NMDS_X, y = NMDS_Y, col = Time_Period)) +
+  geom_point(size = 3, alpha = 0.7) +
+  stat_ellipse(aes(group = Time_Period), linewidth = 1) +
+  labs(title = "NMDS Plot of Community Composition",
+       subtitle = "Comparison Across Time Periods",
+       x = "NMDS Axis 1",
+       y = "NMDS Axis 2",
+       color = "Time Period") +
+  theme_minimal(base_size = 14) +
+  theme(legend.position = "right",
+        legend.title = element_text(face = "bold"),
+        legend.key = element_rect(fill = "white", color = "gray"),
+        panel.grid = element_blank()))
+```    
+
+
