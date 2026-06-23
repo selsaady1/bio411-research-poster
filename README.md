@@ -4,10 +4,14 @@
 
 ![R](https://img.shields.io/badge/R-0a7?style=flat-square) ![R Markdown](https://img.shields.io/badge/R_Markdown-0a7?style=flat-square) ![ggplot2](https://img.shields.io/badge/ggplot2-0a7?style=flat-square) ![dplyr](https://img.shields.io/badge/dplyr-0a7?style=flat-square) ![tidyr](https://img.shields.io/badge/tidyr-0a7?style=flat-square) ![readr](https://img.shields.io/badge/readr-0a7?style=flat-square) ![tidyverse](https://img.shields.io/badge/tidyverse-0a7?style=flat-square) ![car](https://img.shields.io/badge/car-0a7?style=flat-square) ![vegan](https://img.shields.io/badge/vegan-0a7?style=flat-square) ![lme4](https://img.shields.io/badge/lme4-0a7?style=flat-square) 
 
+![Conservation &amp; Ecology Research Poster](images/fig1.png)
+
 ### 🌐 Live project page → **https://selsaady1.github.io/bio411-research-poster/**
 
 ## Overview
 A quantitative ecology research project for BIO 411 analyzing how bird species diversity differs across urban, desert, riparian, and agricultural habitats over time, using long-term CAP LTER bird monitoring data. The work controls for differences between two survey strategies (ESCA broad regional sampling and PASS neighborhood-focused surveys) so that habitat comparisons reflect ecology rather than sampling effort. The central deliverable is a scientific research poster, supported by a series of R-based statistical check-in assignments covering distributions, regression, ANOVA, GLMs, and community ordination.
+
+**Highlight:** Species-richness decline over time: R2 = 0.12, p = 0.07
 
 **Highlight:** Species-richness decline over time: R2 = 0.12, p = 0.07
 
@@ -35,9 +39,16 @@ Bird monitoring records from the CAP LTER were cleaned and merged in R, with abu
 - fitdistrplus
 - stats (ANOVA, GLM, linear regression)
 
+## Gallery
+![figure](images/fig2.png)
+![figure](images/fig3.png)
+![figure](images/fig4.png)
+![figure](images/fig5.png)
+
 ## Repository Structure
 ```
 .gitignore
+.nojekyll
 LICENSE
 README.md
 docs/BIO411Poster.pptx_4_-1.pdf
@@ -55,7 +66,13 @@ images/DiversityOT.png
 images/TOP3COLORSEXCEL.png
 images/abundancebyrainfall.png
 images/average_temp.png
+images/fig1.png
+images/fig2.png
+images/fig3.png
+images/fig4.png
+images/fig5.png
 images/speciesrichness.png
+index.html
 src/Elsaady_Project_1-1-1.Rmd
 src/FinalProject_BIO410-1_1_.Rmd
 src/Module2_Section1_Elsaady-1.R
