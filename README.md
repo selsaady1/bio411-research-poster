@@ -1,21 +1,45 @@
-# Quantitative Methods in Conservation & Ecology — Research Poster
+# Conservation & Ecology Research Poster
 
-> Coursework project from **BIO 411: Quant Methods in Conserv & Eco (2025 Spring A)** (2025 Spring A).
+> Long-term analysis of bird diversity across urban and non-urban habitats in R
 
-**Course:** BIO 411: Quant Methods in Conserv & Eco (2025 Spring A) — 2025 Spring A  ·  **Area:** research, data
+![R](https://img.shields.io/badge/R-0a7?style=flat-square) ![R Markdown](https://img.shields.io/badge/R_Markdown-0a7?style=flat-square) ![ggplot2](https://img.shields.io/badge/ggplot2-0a7?style=flat-square) ![dplyr](https://img.shields.io/badge/dplyr-0a7?style=flat-square) ![tidyr](https://img.shields.io/badge/tidyr-0a7?style=flat-square) ![readr](https://img.shields.io/badge/readr-0a7?style=flat-square) ![tidyverse](https://img.shields.io/badge/tidyverse-0a7?style=flat-square) ![car](https://img.shields.io/badge/car-0a7?style=flat-square) ![vegan](https://img.shields.io/badge/vegan-0a7?style=flat-square) ![lme4](https://img.shields.io/badge/lme4-0a7?style=flat-square) 
+
+### 🌐 Live project page → **https://selsaady1.github.io/bio411-research-poster/**
 
 ## Overview
-This repository contains my submitted deliverables for the project below. The course assignment brief (verbatim, abbreviated):
+A quantitative ecology research project for BIO 411 analyzing how bird species diversity differs across urban, desert, riparian, and agricultural habitats over time, using long-term CAP LTER bird monitoring data. The work controls for differences between two survey strategies (ESCA broad regional sampling and PASS neighborhood-focused surveys) so that habitat comparisons reflect ecology rather than sampling effort. The central deliverable is a scientific research poster, supported by a series of R-based statistical check-in assignments covering distributions, regression, ANOVA, GLMs, and community ordination.
 
-> Module 6 – Communicating with Scientific Posters (20 points, further details below) Create a poster that outlines the work you have done for the project thus far. You should be able to use elements for all your check-in assignments thus far so that you do not have to create the entire assignment from scratch. Introduction (3 points): One to two paragraphs (paragraphs should be no more than 5 sentences. You can also use a series of bullet points) that give background information about both the data you are using as well as the question you are asking. Why is this question important and or relevant to the field of ecology and/or conservation biology? Methods (5 points): A detailed explanation 
+**Highlight:** Species-richness decline over time: R2 = 0.12, p = 0.07
 
-## Tools & Tech
-- PDF report
+## Key Achievements
+- Built a reproducible data-cleaning pipeline that merged the ESCA and PASS survey datasets on survey_id and site_code, removed incomplete records, and standardized species abundance and richness to control for unequal sampling effort
+- Tested long-term species-richness trends with linear regression, reporting a weak, non-significant decline over time (R2 = 0.12, p = 0.07)
+- Compared species richness across habitats using ANOVA, with Shapiro-Wilk and Levene's tests confirming normality and variance assumptions plus residual and QQ plot checks
+- Produced habitat- and time-based figures in ggplot2 (species richness, abundance by habitat, abundance by rainfall, diversity over time, average temperature)
+- Demonstrated a broader quantitative ecology toolkit across supporting assignments: binomial/logistic GLMs, two-way ANOVA, and NMDS community ordination with the vegan package
+
+## Approach
+Bird monitoring records from the CAP LTER were cleaned and merged in R, with abundance and richness standardized to account for the different sampling intensities of the ESCA and PASS survey strategies. Habitat differences were assessed with ANOVA after verifying normality and homogeneity-of-variance assumptions, and long-term change was tested with linear regression backed by residual and QQ diagnostics. Results were visualized with ggplot2 and synthesized into a research poster, with multiple regression, mixed-effects models, and machine learning (Random Forest, Gradient Boosting) outlined as future work.
+
+## Tools & Technologies
 - R
 - R Markdown
+- ggplot2
+- dplyr
+- tidyr
+- readr
+- tidyverse
+- car
+- vegan
+- lme4
+- fitdistrplus
+- stats (ANOVA, GLM, linear regression)
 
 ## Repository Structure
 ```
+.gitignore
+LICENSE
+README.md
 docs/BIO411Poster.pptx_4_-1.pdf
 docs/BIO411Poster.pptx_4_.pdf
 docs/Elsaady_Project-1-1-1.html
@@ -43,21 +67,14 @@ src/Module_4_Overview_Student_Script.Rmd
 src/SaifEModule_3_Overview_Assessment_1_.Rmd
 ```
 
-## Exploring the Code
-- R / R Markdown sources are in `src/`.
-- _Not independently re-run here; provided as submitted._
-
 ## Results
-See the report(s)/presentation(s) in `docs/` — e.g. `docs/BIO411Poster.pptx_4_.pdf`.
+The poster reports a weak, non-significant decline in species richness over time (R2 = 0.12, p = 0.07); urban (PASS) sites showed lower richness but high bird abundance, while riparian habitats held the highest richness, pointing to water and vegetation cover as key drivers. See docs/BIO411Poster.pptx_4_.pdf for the full deliverable.
 
-## Preview
-![TOP3COLORSEXCEL.png](images/TOP3COLORSEXCEL.png)
-![average_temp.png](images/average_temp.png)
-![abundancebyrainfall.png](images/abundancebyrainfall.png)
-![speciesrichness.png](images/speciesrichness.png)
+## Deliverable
+See [`docs/BIO411Poster.pptx_4_.pdf`](docs/BIO411Poster.pptx_4_.pdf).
 
 ## License
-Released under the MIT License — see `LICENSE`.
+MIT — see [`LICENSE`](LICENSE).
 
 ---
-_Part of my engineering coursework portfolio. Deliverables only; routine homework, quizzes, and exams are intentionally excluded._
+_Part of [Saif Elsaady's engineering portfolio](https://selsaady1.github.io/portfolio/). Deliverables only — routine homework/quizzes/exams excluded._
